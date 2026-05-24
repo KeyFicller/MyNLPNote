@@ -208,6 +208,7 @@ deactivate
 | 课程 | 内容 | 文件 |
 |------|------|------|
 | 第15课 | 文本预处理与词嵌入 - 分词、Word2Vec | `01_text_preprocessing.py` |
+| 第16课 | Transformer架构 - Self-Attention、多头注意力 | `02_transformer.py` |
 
 | 阶段 | 开始日期 | 完成日期 | 状态 |
 |------|----------|----------|------|
