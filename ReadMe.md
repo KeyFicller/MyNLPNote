@@ -201,6 +201,7 @@ deactivate
 | 第11课 | PyTorch基础 - Tensor、Autograd、线性回归 | `01_pytorch_basics.py` |
 | 第12课 | 神经网络构建 - nn.Module、MLP、训练流程 | `02_neural_network.py` |
 | 第13课 | 卷积神经网络 - CNN、池化、BN、残差连接 | `03_cnn.py` |
+| 第14课 | DataLoader - 数据加载、Padding、collate_fn | `04_dataloader.py` |
 
 | 阶段 | 开始日期 | 完成日期 | 状态 |
 |------|----------|----------|------|
