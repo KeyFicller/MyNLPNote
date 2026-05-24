@@ -209,6 +209,7 @@ deactivate
 |------|------|------|
 | 第15课 | 文本预处理与词嵌入 - 分词、Word2Vec | `01_text_preprocessing.py` |
 | 第16课 | Transformer架构 - Self-Attention、多头注意力 | `02_transformer.py` |
+| 第17课 | BERT与GPT - 预训练模型、MLM、Autoregressive | `03_bert_gpt.py` |
 
 | 阶段 | 开始日期 | 完成日期 | 状态 |
 |------|----------|----------|------|
