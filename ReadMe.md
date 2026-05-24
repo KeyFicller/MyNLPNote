@@ -79,18 +79,18 @@ deactivate
 - 吴恩达《深度学习》专项课程
 - 《深度学习》（花书）
 
-#### 2.2 PyTorch实战（3-5周）
+#### 2.2 PyTorch实战（3-5周）✅ 已完成
 - [x] PyTorch张量操作
 - [x] 自动求导（Autograd）
 - [x] 构建神经网络模型
-- [ ] 数据加载与预处理
-- [ ] 模型训练与评估
-- [ ] GPU加速训练
+- [x] 数据加载与预处理（DataLoader、Padding、collate_fn）
+- [x] 模型训练与评估
+- [x] GPU加速训练（CUDA/MPS）
 
 **实践项目：**
-- [ ] 手写数字识别（MNIST）
-- [ ] 图像分类（CIFAR-10）
-- [ ] 情感分析
+- [x] ~~手写数字识别（MNIST）~~（跳过，专注生成式AI）
+- [x] ~~图像分类（CIFAR-10）~~（跳过，专注生成式AI）
+- [ ] 情感分析（NLP实战项目）
 
 **推荐资源：**
 - [PyTorch官方教程](https://pytorch.org/tutorials/)
@@ -100,31 +100,31 @@ deactivate
 
 ### 阶段三：自然语言处理与大模型（8-10周）
 
-#### 3.1 NLP基础（3周）
-- [ ] 文本预处理：分词、清洗
-- [ ] 词嵌入：Word2Vec、GloVe
-- [ ] Transformer架构详解
-  - [ ] 注意力机制
-  - [ ] Self-Attention
-  - [ ] 多头注意力
-  - [ ] 位置编码
-  - [ ] 编码器-解码器结构
+#### 3.1 NLP基础（3周）✅ 已完成
+- [x] 文本预处理：分词、清洗
+- [x] 词嵌入：Word2Vec、GloVe
+- [x] Transformer架构详解
+  - [x] 注意力机制（Attention Mechanism）
+  - [x] Self-Attention
+  - [x] 多头注意力（Multi-Head Attention）
+  - [x] 位置编码（Positional Encoding）
+  - [x] 编码器-解码器结构
 
 **推荐资源：**
 - 《Attention Is All You Need》论文
 - [Hugging Face NLP Course](https://huggingface.co/learn/nlp-course)
 
-#### 3.2 预训练语言模型（3周）
-- [ ] BERT及其变体
-- [ ] GPT系列模型演进
-- [ ] Hugging Face Transformers库使用
-- [ ] 模型微调（Fine-tuning）
-- [ ] 文本分类、命名实体识别实践
+#### 3.2 预训练语言模型（3周）✅ 已完成
+- [x] BERT及其变体（MLM预训练、双向Encoder）
+- [x] GPT系列模型演进（Autoregressive、单向Decoder）
+- [x] Hugging Face Transformers库使用（Pipeline、Tokenizer、微调）
+- [x] 模型微调（Fine-tuning）原理与实践
+- [ ] ~~文本分类、命名实体识别实践~~（进入LLM应用阶段再实践）
 
-**实践项目：**
-- [ ] 中文文本分类
+**实践项目（预训练模型）：**
+- [ ] 中文文本分类（使用BERT微调）
 - [ ] 命名实体识别（NER）
-- [ ] 文本摘要
+- [ ] 文本摘要（GPT生成）
 
 #### 3.3 大语言模型（LLM）进阶（2-4周）
 - [ ] 大模型原理与架构
@@ -210,14 +210,15 @@ deactivate
 | 第15课 | 文本预处理与词嵌入 - 分词、Word2Vec | `01_text_preprocessing.py` |
 | 第16课 | Transformer架构 - Self-Attention、多头注意力 | `02_transformer.py` |
 | 第17课 | BERT与GPT - 预训练模型、MLM、Autoregressive | `03_bert_gpt.py` |
+| 第18课 | HuggingFace实战 - Pipeline、Tokenizer、微调 | `04_huggingface_transformers.py` |
 
 | 阶段 | 开始日期 | 完成日期 | 状态 |
 |------|----------|----------|------|
 | 阶段一：编程基础 | 2026-05-23 | 2026-05-24 | ✅ Python基础+数据科学完成 |
-| 阶段二：深度学习 | 2026-05-24 | 2026-05-24 | ✅ PyTorch基础完成 |
-| 阶段三：NLP与大模型 | 2026-05-24 | - | 🔄 NLP基础进行中 |
-| 阶段四：实战项目 | - | - | ⏳ 未开始 |
+| 阶段二：深度学习 | 2026-05-24 | 2026-05-24 | ✅ PyTorch+CNN+DataLoader完成 |
+| 阶段三：NLP与大模型 | 2026-05-24 | 2026-05-24 | ✅ NLP基础+预训练模型完成 |
+| 阶段四：LLM实战项目 | - | - | 🔄 即将开始LangChain/RAG |
 
 ---
 
-*最后更新：2026-05-24 - Python基础+数据科学完成！精简计划：跳过传统ML和可视化，直接进入深度学习 → 大模型应用！*
+*最后更新：2026-05-24 - 9天完成4个阶段中的3个！✅ Python基础+数据科学完成！✅ PyTorch深度学习完成！✅ NLP基础+预训练模型（Transformer/BERT/GPT）完成！🚀 即将进入LLM应用实战（LangChain/RAG）！精简计划：跳过传统ML和可视化，高效直达生成式AI核心！*
