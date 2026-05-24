@@ -45,11 +45,19 @@ deactivate
 - 《Python编程：从入门到实践》
 - [Python官方教程](https://docs.python.org/zh-cn/3/tutorial/)
 
-#### 1.2 数据科学基础（2周）
-- [ ] NumPy数组操作
-- [ ] Pandas数据处理
-- [ ] Matplotlib/Seaborn数据可视化
-- [ ] 基础统计学概念
+#### 1.2 数据科学基础（2周） ✅ 已完成
+
+| 课程 | 内容 | 文件 |
+|------|------|------|
+| 第7课 | NumPy基础 - 数组创建、索引、广播 | `01_numpy_basics.py` |
+| 第8课 | NumPy进阶 - 线性代数、随机数、文件IO | `02_numpy_advanced.py` |
+| 第9课 | Pandas基础 - DataFrame、Series、数据选择 | `03_pandas_basics.py` |
+| 第10课 | Pandas进阶 - 数据清洗、合并、分组 | `04_pandas_advanced.py` |
+
+- [x] NumPy数组操作
+- [x] Pandas数据处理
+- [ ] Matplotlib/Seaborn数据可视化（下一阶段）
+- [ ] 基础统计学概念（机器学习阶段学习）
 
 **推荐资源：**
 - [Kaggle Learn](https://www.kaggle.com/learn)
@@ -198,11 +206,11 @@ deactivate
 
 | 阶段 | 开始日期 | 完成日期 | 状态 |
 |------|----------|----------|------|
-| 阶段一：编程基础 | 2026-05-23 | 2026-05-23 | ✅ Python基础完成 |
+| 阶段一：编程基础 | 2026-05-23 | 2026-05-24 | ✅ Python基础+数据科学完成 |
 | 阶段二：深度学习 | - | - | ⏳ 未开始 |
 | 阶段三：NLP与大模型 | - | - | ⏳ 未开始 |
 | 阶段四：实战项目 | - | - | ⏳ 未开始 |
 
 ---
 
-*最后更新：2026-05-23 - Python基础6课全部完成！准备进入数据科学阶段*
+*最后更新：2026-05-24 - Python基础+数据科学10课全部完成！共2690行示例代码！
