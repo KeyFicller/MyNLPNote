@@ -126,13 +126,19 @@ deactivate
 - [ ] 命名实体识别（NER）
 - [ ] 文本摘要（GPT生成）
 
-#### 3.3 大语言模型（LLM）进阶（2-4周）
-- [ ] 大模型原理与架构
-- [ ] 提示工程（Prompt Engineering）
-- [ ] 检索增强生成（RAG）
+#### 3.3 大语言模型（LLM）进阶（2-4周） 🔄 进行中
+
+| 课程 | 内容 | 文件 |
+|------|------|------|
+| 第19课 | LangChain基础与RAG入门 - Chain、Prompt、Memory、向量检索 | `01_langchain_basics.py` |
+
+- [x] 大模型原理与架构（Transformer/BERT/GPT）
+- [x] 提示工程（Prompt Engineering）
+- [x] 检索增强生成（RAG）
 - [ ] 模型量化与推理优化
-- [ ] LangChain/LlamaIndex框架
-- [ ] 本地部署开源大模型
+- [x] LangChain框架入门
+- [ ] LlamaIndex框架
+- [x] 本地部署开源大模型（GPT-2）
 
 **实践项目：**
 - [ ] 构建个人知识库助手
@@ -217,7 +223,7 @@ deactivate
 | 阶段一：编程基础 | 2026-05-23 | 2026-05-24 | ✅ Python基础+数据科学完成 |
 | 阶段二：深度学习 | 2026-05-24 | 2026-05-24 | ✅ PyTorch+CNN+DataLoader完成 |
 | 阶段三：NLP与大模型 | 2026-05-24 | 2026-05-24 | ✅ NLP基础+预训练模型完成 |
-| 阶段四：LLM实战项目 | - | - | 🔄 即将开始LangChain/RAG |
+| 阶段四：LLM实战项目 | 2026-05-24 | - | 🔄 LangChain+RAG进行中 |
 
 ---
 
