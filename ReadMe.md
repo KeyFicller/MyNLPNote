@@ -123,14 +123,18 @@ deactivate
 
 **实践项目（预训练模型）：**
 - [x] 中文文本分类（使用BERT微调）
-- [ ] 命名实体识别（NER）
+- [x] 命名实体识别（NER）
 - [ ] 文本摘要（GPT生成）
 
 #### 3.3 大语言模型（LLM）进阶（2-4周） 🔄 进行中
 
 | 课程 | 内容 | 文件 |
 |------|------|------|
-| 第19课 | LangChain基础与RAG入门 - Chain、Prompt、Memory、向量检索 | `01_langchain_basics.py` |
+| 第18课 | HuggingFace实战 - Pipeline、Tokenizer、微调 | `04_huggingface_transformers.py` |
+| 第19课 | 中文文本分类实战 - BERT微调 | `06_chinese_text_classification.py` |
+| 第20课 | 中文星级评价分类 - 5分类任务 | `07_chinese_text_rank.py` |
+| 第21课 | 中文命名实体识别 - NER序列标注 | `08_chinese_ner.py` |
+| 第22课 | LangChain基础与RAG入门 | `01_langchain_basics.py` |
 
 - [x] 大模型原理与架构（Transformer/BERT/GPT）
 - [x] 提示工程（Prompt Engineering）
