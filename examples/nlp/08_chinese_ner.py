@@ -29,8 +29,8 @@ os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
 os.environ['HF_HOME'] = os.path.join(os.path.dirname(__file__), '..', '..', '.cache', 'huggingface')
 os.makedirs(os.environ['HF_HOME'], exist_ok=True)
 
-print(f"[NET] 使用镜像源: {os.environ['HF_ENDPOINT']}")
-print(f"[CACHE] 模型缓存目录: {os.environ['HF_HOME']}")
+print(f"🌐 使用镜像源: {os.environ['HF_ENDPOINT']}")
+print(f"📁 模型缓存目录: {os.environ['HF_HOME']}")
 
 # ============================================================
 
@@ -49,7 +49,7 @@ import numpy as np
 from tqdm import tqdm
 
 print("=" * 70)
-print("Chinese Named Entity Recognition (NER) Practice")
+print("中文命名实体识别（NER）实战")
 print("=" * 70)
 
 # ============================================================
@@ -91,7 +91,7 @@ LABEL_LIST = ['O', 'B-PER', 'I-PER', 'B-LOC', 'I-LOC', 'B-ORG', 'I-ORG']
 LABEL2ID = {label: idx for idx, label in enumerate(LABEL_LIST)}
 ID2LABEL = {idx: label for label, idx in LABEL2ID.items()}
 
-print(f"\n[LABEL] 标签表：")
+print(f"\n📋 标签表：")
 for idx, label in enumerate(LABEL_LIST):
     print(f"   {idx}: {label}")
 
