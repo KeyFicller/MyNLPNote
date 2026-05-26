@@ -136,6 +136,7 @@ deactivate
 | 第21课 | 中文命名实体识别 - NER序列标注 | `08_chinese_ner.py` |
 | 第22课 | LangChain基础与RAG入门 | `01_langchain_basics.py` |
 | 第23课 | 完整RAG项目实战 - 个人知识库助手 | `02_complete_rag_project.py` |
+| 第24课 | AI Agent 开发实战 - ReAct智能代理 | `03_ai_agent.py` |
 
 - [x] 大模型原理与架构（Transformer/BERT/GPT）
 - [x] 提示工程（Prompt Engineering）
@@ -153,6 +154,7 @@ deactivate
 - [x] 中文命名实体识别（NER）
 - [x] GPT-2本地部署与文本生成
 - [x] 构建个人知识库助手（完整RAG项目）
+- [x] AI Agent开发（ReAct智能代理）
 - [ ] 搭建聊天机器人
 - [ ] 开发AI写作助手
 
@@ -243,4 +245,4 @@ deactivate
 
 ---
 
-*最后更新：2026-05-25 - 10天完成4个阶段！✅ Python基础+数据科学完成！✅ PyTorch深度学习完成！✅ NLP基础+预训练模型（Transformer/BERT/GPT）完成！✅ LLM应用实战（LangChain+RAG+知识库助手）完成！🚀 即将开始AI Agent开发！精简计划：跳过传统ML和可视化，高效直达生成式AI核心！*
+*最后更新：2026-05-26 - 11天完成4个阶段！✅ Python基础+数据科学完成！✅ PyTorch深度学习完成！✅ NLP基础+预训练模型（Transformer/BERT/GPT）完成！✅ LLM应用实战（LangChain+RAG+知识库助手+AI Agent）完成！🚀 开始Multi-Agent系统和复杂任务规划！精简计划：跳过传统ML和可视化，高效直达生成式AI核心！*
