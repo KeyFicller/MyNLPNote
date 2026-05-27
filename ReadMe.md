@@ -141,7 +141,7 @@ deactivate
 | 第26课 | RAG 与 Agent 融合 - 知识库智能助手 | `05_rag_agent.py` |
 | 第27课 | Gradio 聊天机器人部署 | `06_gradio_chatbot.py` |
 | 第28课 | Function Calling 与 Tools 使用 | `07_function_calling.py` |
-
+|| 第29课 | 智能客服系统综合实战 | `08_intelligent_customer_service.py` |
 - [x] 大模型原理与架构（Transformer/BERT/GPT）
 - [x] 提示工程（Prompt Engineering）
 - [x] 检索增强生成（RAG）
@@ -245,4 +245,4 @@ deactivate
 
 ---
 
-*最后更新：2026-05-27 - 第28课：Function Calling 完成！🚀 已掌握完整的大模型应用开发技术栈！下一步：Multi-Agent / 模型部署 / 实战项目*
+*最后更新：2026-05-27 - 第29课：智能客服系统综合实战完成！🎉 已掌握完整的大模型应用开发技术栈！具备独立开发AI应用的能力！下一步：模型部署 / 生产优化 / 求职准备*
