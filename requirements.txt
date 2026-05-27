@@ -28,6 +28,9 @@ chromadb>=0.5.0
 ddgs>=9.0.0
 openai>=1.30.0
 
+# Gradio - Web UI 部署（第27课）
+gradio>=4.0.0
+
 # Jupyter Notebook（学习必备）
 jupyter>=1.0.0
 ipykernel>=6.25.0

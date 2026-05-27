@@ -139,6 +139,7 @@ deactivate
 | 第24课 | AI Agent 开发实战 - ReAct智能代理 | `03_ai_agent.py` |
 | 第25课 | AI Agent 接入真实 LLM API | `04_ai_agent_with_api.py` |
 | 第26课 | RAG 与 Agent 融合 - 知识库智能助手 | `05_rag_agent.py` |
+| 第27课 | Gradio 聊天机器人部署 | `06_gradio_chatbot.py` |
 
 - [x] 大模型原理与架构（Transformer/BERT/GPT）
 - [x] 提示工程（Prompt Engineering）
@@ -158,7 +159,7 @@ deactivate
 - [x] 构建个人知识库助手（完整RAG项目）
 - [x] AI Agent开发（ReAct智能代理）
 - [x] RAG 与 Agent 融合（知识库智能助手）
-- [ ] 搭建聊天机器人
+- [x] 搭建聊天机器人（Gradio Web UI）
 - [ ] 开发AI写作助手
 
 **推荐资源：**
