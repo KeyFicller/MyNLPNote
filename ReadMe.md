@@ -140,12 +140,14 @@ deactivate
 | 第25课 | AI Agent 接入真实 LLM API | `04_ai_agent_with_api.py` |
 | 第26课 | RAG 与 Agent 融合 - 知识库智能助手 | `05_rag_agent.py` |
 | 第27课 | Gradio 聊天机器人部署 | `06_gradio_chatbot.py` |
+| 第28课 | Function Calling 与 Tools 使用 | `07_function_calling.py` |
 
 - [x] 大模型原理与架构（Transformer/BERT/GPT）
 - [x] 提示工程（Prompt Engineering）
 - [x] 检索增强生成（RAG）
 - [x] 文档切分与向量数据库（ChromaDB）
 - [x] 完整RAG系统构建
+- [x] Function Calling 与 Tools 使用
 - [ ] 模型量化与推理优化
 - [x] LangChain框架入门
 - [ ] LlamaIndex框架
@@ -239,8 +241,8 @@ deactivate
 | 阶段一：编程基础 | 2026-05-23 | 2026-05-24 | ✅ Python基础+数据科学完成 |
 | 阶段二：深度学习 | 2026-05-24 | 2026-05-24 | ✅ PyTorch+CNN+DataLoader完成 |
 | 阶段三：NLP与大模型 | 2026-05-24 | 2026-05-24 | ✅ NLP基础+预训练模型完成 |
-| 阶段四：LLM实战项目 | 2026-05-24 | 进行中 | ✅ LangChain+RAG+Agent+真实API+RAG融合 |
+| 阶段四：LLM实战项目 | 2026-05-24 | 2026-05-27 | ✅ LangChain+RAG+Agent+Function Calling |
 
 ---
 
-*最后更新：2026-05-26 - 第26课：RAG 与 Agent 融合完成！🚀 下一步：RAG 进阶 / Gradio 部署 / LlamaIndex*
+*最后更新：2026-05-27 - 第28课：Function Calling 完成！🚀 已掌握完整的大模型应用开发技术栈！下一步：Multi-Agent / 模型部署 / 实战项目*
