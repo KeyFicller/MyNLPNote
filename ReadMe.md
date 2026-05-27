@@ -138,6 +138,7 @@ deactivate
 | 第23课 | 完整RAG项目实战 - 个人知识库助手 | `02_complete_rag_project.py` |
 | 第24课 | AI Agent 开发实战 - ReAct智能代理 | `03_ai_agent.py` |
 | 第25课 | AI Agent 接入真实 LLM API | `04_ai_agent_with_api.py` |
+| 第26课 | RAG 与 Agent 融合 - 知识库智能助手 | `05_rag_agent.py` |
 
 - [x] 大模型原理与架构（Transformer/BERT/GPT）
 - [x] 提示工程（Prompt Engineering）
@@ -156,6 +157,7 @@ deactivate
 - [x] GPT-2本地部署与文本生成
 - [x] 构建个人知识库助手（完整RAG项目）
 - [x] AI Agent开发（ReAct智能代理）
+- [x] RAG 与 Agent 融合（知识库智能助手）
 - [ ] 搭建聊天机器人
 - [ ] 开发AI写作助手
 
@@ -168,17 +170,11 @@ deactivate
 ### 阶段四：实战与作品集（持续进行）
 
 #### 4.1 综合项目
-- [ ] 完整RAG应用开发
-- [ ] AI Agent开发
+- [x] 完整RAG应用开发
+- [x] AI Agent开发
+- [x] RAG 与 Agent 融合
 - [ ] 多模态应用探索
 
-#### 4.2 求职准备
-- [ ] 整理GitHub项目
-- [ ] 撰写技术博客
-- [ ] 刷题：LeetCode算法
-- [ ] 面试准备：八股文、系统设计
-
----
 
 ## 示例代码和框架
 
@@ -242,8 +238,8 @@ deactivate
 | 阶段一：编程基础 | 2026-05-23 | 2026-05-24 | ✅ Python基础+数据科学完成 |
 | 阶段二：深度学习 | 2026-05-24 | 2026-05-24 | ✅ PyTorch+CNN+DataLoader完成 |
 | 阶段三：NLP与大模型 | 2026-05-24 | 2026-05-24 | ✅ NLP基础+预训练模型完成 |
-| 阶段四：LLM实战项目 | 2026-05-24 | 2026-05-25 | ✅ LangChain+RAG+完整RAG项目完成 |
+| 阶段四：LLM实战项目 | 2026-05-24 | 进行中 | ✅ LangChain+RAG+Agent+真实API+RAG融合 |
 
 ---
 
-*最后更新：2026-05-26 - 11天完成4个阶段！✅ Python基础+数据科学完成！✅ PyTorch深度学习完成！✅ NLP基础+预训练模型（Transformer/BERT/GPT）完成！✅ LLM应用实战（LangChain+RAG+知识库助手+AI Agent+真实API接入）完成！🚀 开始多模态应用和Agent部署！精简计划：跳过传统ML和可视化，高效直达生成式AI核心！*
+*最后更新：2026-05-26 - 第26课：RAG 与 Agent 融合完成！🚀 下一步：RAG 进阶 / Gradio 部署 / LlamaIndex*
