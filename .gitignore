@@ -52,3 +52,4 @@ hf_cache/
 ~/.cache/huggingface/
 .cache/
 saved_models/
+toy/logs/*
