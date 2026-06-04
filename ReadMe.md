@@ -91,6 +91,7 @@ deactivate
 | 第27课 | Gradio 聊天机器人 | `06_gradio_chatbot.py` |
 | 第28课 | Function Calling | `07_function_calling.py` |
 | 第29课 | 智能客服综合实战 | `08_intelligent_customer_service.py` |
+| 第30课 | MCP 自定义 Server | `09_mcp_server.py` |
 
 ---
 
@@ -138,9 +139,9 @@ python toy/01_whos_undercover.py --players 8 --undercovers 3 --max-rounds 20
 | 编程基础（Python + NumPy/Pandas） | 已完成 |
 | 深度学习（PyTorch） | 已完成 |
 | NLP 与预训练模型 | 已完成 |
-| LLM 应用（RAG / Agent / Function Calling） | 已完成 |
+| LLM 应用（RAG / Agent / Function Calling / MCP） | 已完成 |
 | 趣味 AI 游戏（toy） | 进行中 |
 
 ---
 
-*最后更新：2026-05-28*
+*最后更新：2026-06-04*

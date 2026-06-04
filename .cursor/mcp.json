@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "nlp-notes": {
+      "command": "python",
+      "args": ["${workspaceFolder}/examples/llm-apps/mcp_nlp_notes_server.py"]
+    }
+  }
+}
