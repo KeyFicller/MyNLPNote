@@ -20,111 +20,33 @@
 """
 
 from random import shuffle
-from typing import List, Dict, Any, Optional, TextIO
+from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 import openai
 import os
 import json
-import atexit
-import builtins
 import re
 
 
 # =====================================================
-# 游戏日志系统（类似骗子酒馆）
+# 共享模块导入（日志 / API 客户端）
 # =====================================================
 
-_LOG_FILE: TextIO | None = None
-_LOG_PATH: str | None = None
-_ORIGINAL_PRINT = builtins.print
-
-ANSI_ESCAPE_RE = re.compile(r"\033\[[0-9;]*m")
-
-
-def _strip_ansi(text: str) -> str:
-    """去除 ANSI 颜色代码"""
-    return ANSI_ESCAPE_RE.sub("", text)
-
-
-def setup_game_logging(log_dir: str | None = None) -> str:
-    """
-    设置游戏日志系统
-    
-    复写 print，将输出写入带时间戳的日志文件（同时保留控制台输出）
-    
-    Args:
-        log_dir: 日志目录，默认为当前文件所在目录的 logs 子目录
-        
-    Returns:
-        日志文件的完整路径
-    """
-    global _LOG_FILE, _LOG_PATH
-
-    if log_dir is None:
-        log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
-    os.makedirs(log_dir, exist_ok=True)
-
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    _LOG_PATH = os.path.join(log_dir, f"undercover_{ts}.log")
-    _LOG_FILE = open(_LOG_PATH, "w", encoding="utf-8")
-    _LOG_FILE.write(f"=== 谁是卧底 {datetime.now().isoformat(timespec='seconds')} ===\n")
-    _LOG_FILE.flush()
-
-    builtins.print = game_print
-    atexit.register(close_game_logging)
-    return _LOG_PATH
-
-
-def game_print(*args, **kwargs):
-    """
-    替代内置 print：写入日志；默认仍输出到控制台
-
-    Args:
-        *args: 要打印的内容
-        **kwargs: 其他参数
-        log_plain: 可选，写入日志的纯文本（无 ANSI）；控制台仍用 args 拼接结果
-    """
-    log_plain = kwargs.pop("log_plain", None)
-    sep = kwargs.get("sep", " ")
-    end = kwargs.get("end", "\n")
-    text = sep.join(str(a) for a in args) + end
-
-    if _LOG_FILE and not _LOG_FILE.closed:
-        if log_plain is not None:
-            log_text = log_plain if str(log_plain).endswith(end) else str(log_plain) + end
-        else:
-            log_text = _strip_ansi(text)
-        _LOG_FILE.write(log_text)
-        _LOG_FILE.flush()
-
-    target = kwargs.get("file")
-    if target is not None:
-        _ORIGINAL_PRINT(*args, **kwargs)
-    else:
-        _ORIGINAL_PRINT(*args, **{k: v for k, v in kwargs.items() if k != "file"})
-
-
-def close_game_logging():
-    """关闭日志文件"""
-    global _LOG_FILE
-    if _LOG_FILE and not _LOG_FILE.closed:
-        _LOG_FILE.write(f"\n=== END {datetime.now().isoformat(timespec='seconds')} ===\n")
-        _LOG_FILE.close()
-        _LOG_FILE = None
+from common.logger import setup_game_logging, game_print, close_game_logging, original_print
+from common.client import create_client, MODEL_NAME
+from common.engine import BasePlayer, BaseGame
 
 
 # =====================================================
 # 配置常量
 # =====================================================
 
-API_KEY = os.getenv("DEEPSEEK_API_KEY")
-BASE_URL = "https://api.deepseek.com/v1"
-MODEL_NAME = "deepseek-chat"
 VOTE_SUMMARY_MAX_LEN = 100
 VOTE_MAX_RETRIES = 2
 DESCRIPTION_MAX_RETRIES = 3
 DESCRIPTION_SIMILARITY_THRESHOLD = 0.72
+MAX_PROMPT_HISTORY_ROUNDS = 5  # 注入 LLM prompt 的公开历史最大轮数
 
 
 @dataclass
@@ -195,41 +117,18 @@ class GameResult:
 
 
 # =====================================================
-# OpenAI 客户端（共享）
-# =====================================================
-
-def create_client() -> Optional[openai.OpenAI]:
-    """
-    创建并返回 OpenAI 客户端实例
-    
-    Returns:
-        openai.OpenAI 实例，如果 API Key 未配置则返回 None
-    """
-    if not API_KEY:
-        print("⚠️ 警告: 未设置 DEEPSEEK_API_KEY 环境变量")
-        print("   请在 .vscode/settings.json 或环境变量中配置")
-        return None
-    
-    try:
-        return openai.OpenAI(api_key=API_KEY, base_url=BASE_URL)
-    except Exception as e:
-        print(f"❌ 创建客户端失败: {e}")
-        return None
-
-
-# =====================================================
 # 第一部分：玩家类
 # =====================================================
 
-class Player:
+class Player(BasePlayer):
     """
-    AI 玩家类
-    
+    AI 玩家类 — 继承自 BasePlayer（多 AI 对抗游戏框架）
+
     每个玩家通过 DeepSeek API 进行推理和决策，包括：
     - 词语描述（模糊但准确）
     - 投票决策（基于历史信息推理）
     """
-    
+
     def __init__(
         self,
         index: int,
@@ -238,20 +137,34 @@ class Player:
     ):
         """
         初始化玩家
-        
+
         Args:
             index: 玩家编号（0 起）
             client: OpenAI 客户端实例
             config: 游戏配置
         """
-        self.index = index
+        super().__init__(index, f"玩家{index}", client)
         self.config = config
         self.word: Optional[str] = None
-        self.is_alive = True
         self.think_history: List[str] = []  # 思考历史
         self.description_history: List[str] = []  # 发言历史
-        self.client = client
         self.suspicion_level = 0  # 怀疑度（被投票次数）
+
+    # ── 兼容性属性：旧代码用 is_alive，基类用 alive ──
+
+    @property
+    def is_alive(self) -> bool:
+        return self.alive
+
+    @is_alive.setter
+    def is_alive(self, value: bool) -> None:
+        self.alive = value
+
+    # ── 实现抽象方法 ──
+
+    def make_decision(self, game: BaseGame, **kwargs) -> Dict[str, Any]:
+        """谁是卧底使用 make_description / make_vote 专用方法，此方法为兼容占位"""
+        return {"action": "pass"}
     
     def set_word(self, word: str) -> None:
         """设置玩家的词"""
@@ -385,39 +298,19 @@ class Player:
 × 错误：五个人都说「糯米粉包裹馅料搓圆煮熟」——高度重复，禁止"""
 
     def _parse_description_response(self, content: str) -> tuple[str, str]:
-        """解析模型返回的思考与描述"""
+        """解析模型返回的思考与描述，找不到「总结:」+「描述:」则直接报错"""
         thinking = ""
         description = ""
-        summary_match = None
-        desc_match = None
-
         for line in content.split("\n"):
-            line_stripped = line.strip()
-            if line_stripped.lower().startswith("总结:"):
-                summary_match = line_stripped[3:].strip()
-            elif line_stripped.startswith("总结："):
-                summary_match = line_stripped[3:].strip()
-            elif line_stripped.lower().startswith("描述:"):
-                desc_match = line_stripped[3:].strip()
-            elif line_stripped.startswith("描述："):
-                desc_match = line_stripped[3:].strip()
-
-        if summary_match and desc_match:
-            thinking = summary_match
-            description = desc_match
-        elif "######" in content:
-            parts = content.split("######", 1)
-            thinking = parts[0].strip()
-            description = parts[1].strip()
-        else:
-            lines = content.split("\n")
-            if len(lines) >= 2:
-                thinking = lines[0].strip()
-                description = " ".join(lines[1:]).strip()
-            else:
-                thinking = "思考过程未正确格式化"
-                description = content
-
+            s = line.strip()
+            if s.lower().startswith("总结:") or s.startswith("总结："):
+                thinking = s.split(":", 1)[-1].split("：", 1)[-1].strip()
+            elif s.lower().startswith("描述:") or s.startswith("描述："):
+                description = s.split(":", 1)[-1].split("：", 1)[-1].strip()
+        if not thinking or not description:
+            raise RuntimeError(
+                f"玩家{self.index} 描述回复格式错误，未找到「总结:」+「描述:」：{content[:200]}"
+            )
         return thinking, description
 
     def make_description(
@@ -489,9 +382,9 @@ class Player:
             except Exception as e:
                 print(f"    ❌ 生成描述时出错(尝试{attempt}): {e}")
                 if attempt >= DESCRIPTION_MAX_RETRIES:
-                    break
-
-        return "这是一种有特定食用或文化场景的传统食品，别称和做法各地不太一样"
+                    raise RuntimeError(
+                        f"玩家{self.index} 描述生成失败（{DESCRIPTION_MAX_RETRIES}次重试均已耗尽）"
+                    ) from e
 
     def _build_vote_prompt(
         self,
@@ -621,18 +514,18 @@ class Player:
         tools_map: Dict[str, Any],
         hint_text: str = "",
     ) -> Optional[int]:
-        """未调用工具时的强制兜底投票"""
+        """未调用工具时尝试从文本解析投票目标；解析失败直接报错"""
         candidates = [i for i in alive_players if i != self.index]
         if not candidates:
             return None
         target = self._parse_vote_target_from_text(hint_text, self.index, alive_players)
-        if target is None:
-            target = candidates[0]
-            print(f"    ⚠️ 玩家{self.index} 未调用 vote，系统随机兜底 → 玩家{target}")
-        else:
+        if target is not None:
             print(f"    ⚠️ 玩家{self.index} 未调用 vote，从文本解析兜底 → 玩家{target}")
-        vote(game=game, voter_index=self.index, target_index=target)
-        return target
+            vote(game=game, voter_index=self.index, target_index=target)
+            return target
+        raise RuntimeError(
+            f"玩家{self.index} 未调用 vote 工具且无法从文本解析投票目标：{hint_text[:200]}"
+        )
 
     def _run_vote_think_phase(self, system_prompt: str, candidates: List[int]) -> str:
         """第一步：仅输出思考总结，不调用工具"""
@@ -667,12 +560,12 @@ class Player:
             except Exception as e:
                 print(f"    ❌ 玩家{self.index}思考阶段出错(尝试{attempt}): {e}")
                 if attempt >= VOTE_MAX_RETRIES:
-                    break
-        # 思考阶段兜底：用截断原文或默认句
-        fallback = self._extract_vote_summary(last_raw)
-        if not self._is_valid_vote_summary(fallback):
-            fallback = f"综合发言，怀疑玩家{candidates[0]}描述与我的词不符"
-        return fallback[:VOTE_SUMMARY_MAX_LEN]
+                    raise RuntimeError(
+                        f"玩家{self.index} 投票思考失败（{VOTE_MAX_RETRIES}次重试均已耗尽）"
+                    ) from e
+        raise RuntimeError(
+            f"玩家{self.index} 投票思考阶段未能产出有效总结，原文：{last_raw[:200]}"
+        )
 
     def _run_vote_action_phase(
         self,
@@ -998,48 +891,95 @@ class Judger:
 # 第三部分：游戏主类
 # =====================================================
 
-class Game:
-    """游戏主控类"""
-    
+class Game(BaseGame):
+    """游戏主控类 — 继承自 BaseGame（多 AI 对抗游戏框架）"""
+
     def __init__(self, config: GameConfig | None = None):
         """
         初始化游戏
-        
+
         Args:
             config: 游戏配置；默认使用 DEFAULT_GAME_CONFIG
         """
+        super().__init__()
         self.config = config or DEFAULT_GAME_CONFIG
         self.player_num = self.config.player_num
         self.undercover_num = self.config.undercover_num
         self.client = create_client()
-        self.players: List[Player] = [
+        self.judger = Judger(self.client)
+        self.turn_records: List[TurnRecord] = []  # 结构化回合记录
+        self.votes: Dict[int, int] = {i: 0 for i in range(self.player_num)}
+        self.result: Optional[GameResult] = None
+
+    # ── BaseGame 抽象方法实现 ──
+
+    def print_intro(self) -> None:
+        """游戏开场信息"""
+        print(f"\n{'='*60}")
+        print("🎮 谁是卧底 - AI 对战版")
+        print(f"{'='*60}")
+
+    def init_players(self) -> None:
+        """创建 AI 玩家"""
+        self.players = [
             Player(i, self.client, self.config) for i in range(self.player_num)
         ]
-        self.judger = Judger(self.client)
-        self.game_history: List[Dict] = []
-        self.turn_records: List[TurnRecord] = []  # 结构化回合记录
-        self.current_round = 0
-        self.votes: Dict[int, int] = {i: 0 for i in range(self.player_num)}
-        self.ended = False
-        self.start_time: Optional[datetime] = None
-        self.result: Optional[GameResult] = None
-    
-    def game_start(self) -> bool:
+
+    def setup_round(self) -> bool:
+        """新一轮初始化"""
+        self.current_round += 1
+        return True
+
+    def run_round(self) -> bool:
+        """执行一轮：发言 → 投票 → 淘汰"""
+        turn_record = run_description_phase(self)
+        self.turn_records.append(turn_record)
+
+        eliminated = run_vote_phase(self, turn_record)
+        if eliminated is not None:
+            if eliminate_player(self, eliminated):
+                return False  # 游戏结束
+        else:
+            print(f"\n  ⏳ 本轮平票，无人淘汰")
+            self.record_event("tie", "no elimination")
+
+        if check_win_conditions(self):
+            return False
+
+        if self.current_round >= self.config.max_rounds:
+            print(f"\n  ⏰ 达到最大轮数限制（{self.config.max_rounds}），游戏结束")
+            self.ended = True
+            return False
+
+        return True
+
+    def check_end_condition(self) -> bool:
+        """检查终局条件"""
+        return check_win_conditions(self)
+
+    def get_winner(self) -> Optional[BasePlayer]:
+        """阵营对战无单个胜者，通过 result 字段区分"""
+        return None
+
+    def _finalize(self):
+        """结算并生成 GameResult"""
+        self.ended = True
+        if not self.result:
+            self.result = _make_game_result(
+                self,
+                "timeout" if self.current_round >= self.config.max_rounds else "unknown",
+            )
+        return self.result
+
+    def start(self) -> bool:
         """
-        初始化游戏，分配词语
-        
-        Returns:
-            是否成功启动
+        初始化游戏，分配词语 — 覆盖 BaseGame.start()
         """
-        print("\n" + "="*60)
-        print("🎮 谁是卧底 - AI 对战版")
-        print("="*60)
-        
         if not self.client:
             print("\n⚠️ 警告: API 未配置，将使用默认词对运行")
-        
-        self.start_time = datetime.now()
-        
+
+        super().start()  # 设置 start_time + print_intro + init_players
+
         # 生成并分配词语
         words = self.judger.generate_word(self.config)
         for i, player in enumerate(self.players):
@@ -1104,7 +1044,7 @@ class Game:
             action: 动作类型
             detail: 详细内容
         """
-        self.game_history.append({
+        self.history.append({
             "round": self.current_round,
             "action": action,
             "detail": detail,
@@ -1139,18 +1079,43 @@ class Game:
         self, current_turn: Optional[TurnRecord] = None
     ) -> str:
         """
-        生成注入 LLM 的完整公开历史（各轮发言 + 投票 + 淘汰）。
-        包含已结束轮次；current_turn 可带上本轮已进行中的发言/投票。
+        生成注入 LLM 的公开历史（最近 N 轮完整记录 + 早期摘要）。
+        防止多轮后 prompt 膨胀。
         """
+        all_records = list(self.turn_records)
+        if len(all_records) <= MAX_PROMPT_HISTORY_ROUNDS:
+            recent = all_records
+            older = []
+        else:
+            recent = all_records[-MAX_PROMPT_HISTORY_ROUNDS:]
+            older = all_records[:-MAX_PROMPT_HISTORY_ROUNDS]
+
         blocks: List[str] = []
-        for tr in self.turn_records:
+
+        # 早期轮次压缩为一行摘要
+        if older:
+            summary_parts = []
+            for tr in older:
+                elim = tr.eliminated
+                role = ""
+                if elim is not None:
+                    p = self.players[elim]
+                    role = f"（{'卧底' if self.is_undercover(p) else '平民'}）"
+                summary_parts.append(
+                    f"第{tr.round_num}轮: {len(tr.descriptions)}人发言, "
+                    f"淘汰玩家{elim}{role}" if elim is not None else f"第{tr.round_num}轮: 平票无人淘汰"
+                )
+            blocks.append("【早期轮次摘要】" + "；".join(summary_parts))
+            blocks.append("---")
+
+        # 最近轮次完整展示
+        for tr in recent:
             blocks.append(self._format_turn_record(tr))
 
+        # 当前轮（进行中）
         if current_turn is not None:
-            # 当前轮：可能已有发言，投票阶段则描述与投票都齐全
             has_content = bool(current_turn.descriptions or current_turn.votes)
             if has_content:
-                # 若该轮已在 turn_records 中（不应重复），跳过
                 if not self.turn_records or self.turn_records[-1] is not current_turn:
                     blocks.append(self._format_turn_record(current_turn))
 
@@ -1469,93 +1434,37 @@ def eliminate_player(game: Game, player_index: int) -> bool:
     return check_win_conditions(game)
 
 
-def run_game_loop(game: Game) -> GameResult:
-    """
-    运行完整游戏循环
-    
-    Args:
-        game: 游戏实例
-        
-    Returns:
-        游戏结果
-    """
-    print(f"\n{'='*60}")
-    print("🎮 游戏开始！")
-    print(f"{'='*60}")
-    
-    while not game.ended:
-        game.current_round += 1
-        
-        # 描述阶段
-        turn_record = run_description_phase(game)
-        game.turn_records.append(turn_record)
-        
-        # 投票阶段
-        eliminated = run_vote_phase(game, turn_record)
-        
-        if eliminated is not None:
-            # 有人被淘汰
-            if eliminate_player(game, eliminated):
-                break
-        else:
-            # 平票，继续
-            print(f"\n  ⏳ 本轮平票，无人淘汰")
-            game.record_history("tie", "no elimination")
-        
-        if check_win_conditions(game):
-            break
-        
-        # 检查最大轮数限制（防止无限循环）
-        if game.current_round >= game.config.max_rounds:
-            print(f"\n  ⏰ 达到最大轮数限制（{game.config.max_rounds}），游戏结束")
-            game.ended = True
-            break
-    
-    return game.result or GameResult(
-        winner="unknown",
-        undercover_indices=[],
-        true_word="",
-        fake_word="",
-        rounds=game.current_round,
-        duration=0,
-    )
+    def print_summary(self) -> None:
+        """游戏结束总结 — 覆盖 BaseGame.print_summary()"""
+        print(f"\n{'='*60}")
+        print("📋 游戏总结")
+        print(f"{'='*60}")
 
+        if self.result:
+            label = "🎉 平民" if self.result.winner == "civilian" else "🎭 卧底"
+            print(f"\n  获胜方: {label}")
+            undercover_str = ", ".join(f"玩家{i}" for i in self.result.undercover_indices)
+            print(f"  卧底玩家: {undercover_str or '无'}")
+            print(f"  平民词: {self.result.true_word}")
+            print(f"  卧底词: {self.result.fake_word}")
+            print(f"  总轮数: {self.result.rounds}")
+            if self.result.duration:
+                print(f"  游戏时长: {self.result.duration:.2f}秒")
 
-def print_game_summary(game: Game) -> None:
-    """
-    打印游戏总结
-    
-    Args:
-        game: 游戏实例
-    """
-    print(f"\n{'='*60}")
-    print("📋 游戏总结")
-    print(f"{'='*60}")
-    
-    if game.result:
-        print(f"\n  获胜方: {'🎉 平民' if game.result.winner == 'civilian' else '🎭 卧底'}")
-        undercover_str = ", ".join(f"玩家{i}" for i in game.result.undercover_indices)
-        print(f"  卧底玩家: {undercover_str or '无'}")
-        print(f"  平民词: {game.result.true_word}")
-        print(f"  卧底词: {game.result.fake_word}")
-        print(f"  总轮数: {game.result.rounds}")
-        print(f"  游戏时长: {game.result.duration:.2f}秒")
-    
-    print(f"\n  详细记录:")
-    print(f"  {'轮次':<6} {'阶段':<12} {'详情'}")
-    print(f"  {'-'*50}")
-    
-    for record in game.game_history:
-        round_num = record.get('round', '-')
-        action = record.get('action', '')[:10]
-        detail = record.get('detail', '')[:40]
-        print(f"  {round_num:<6} {action:<12} {detail}")
-    
-    print(f"\n  玩家表现:")
-    for i, player in enumerate(game.players):
-        status = "存活" if player.is_alive else "淘汰"
-        identity = "卧底" if game.is_undercover(player) else "平民"
-        print(f"    玩家{i}: {identity} | {status} | 被投{player.suspicion_level}票")
+        print(f"\n  详细记录:")
+        print(f"  {'轮次':<6} {'阶段':<12} {'详情'}")
+        print(f"  {'-'*50}")
+        for record in self.history:
+            r = record.get('round', '-')
+            a = (record.get('action', '') or record.get('event', ''))[:12]
+            d = record.get('detail', '')[:40]
+            print(f"  {r:<6} {a:<12} {d}")
+
+        print(f"\n  玩家表现:")
+        for i, player in enumerate(self.players):
+            status = "存活" if player.is_alive else "淘汰"
+            identity = "卧底" if self.is_undercover(player) else "平民"
+            print(f"    玩家{i}: {identity} | {status} | 被投{player.suspicion_level}票")
 
 
 # =====================================================
@@ -1593,19 +1502,14 @@ if __name__ == "__main__":
             max_rounds=args.max_rounds,
         )
     except ValueError as e:
-        _ORIGINAL_PRINT(f"❌ 配置错误: {e}")
+        original_print(f"❌ 配置错误: {e}")
         raise SystemExit(1) from e
 
     # 设置日志系统
-    log_path = setup_game_logging()
-    _ORIGINAL_PRINT(f"📝 日志文件: {log_path}")
+    log_path = setup_game_logging("undercover")
+    original_print(f"📝 日志文件: {log_path}")
 
     game = Game(config=config)
-
-    if game.game_start():
-        run_game_loop(game)
-        print_game_summary(game)
-    else:
-        print("❌ 游戏启动失败")
+    game.run(max_rounds=config.max_rounds)
 
     close_game_logging()

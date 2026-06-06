@@ -3,78 +3,20 @@
 
 import os
 import re
-import atexit
-import builtins
 import openai
 import random
 import json
 from datetime import datetime
-from typing import Dict, List, Any, TextIO
+from typing import Dict, List, Any
 
-_LOG_FILE: TextIO | None = None
-_LOG_PATH: str | None = None
-_ORIGINAL_PRINT = builtins.print
-
-ANSI_ESCAPE_RE = re.compile(r"\033\[[0-9;]*m")
-
-
-def _strip_ansi(text: str) -> str:
-    return ANSI_ESCAPE_RE.sub("", text)
-
-
-def setup_game_logging(log_dir: str | None = None) -> str:
-    """复写 print，将输出写入带时间戳的日志文件（同时保留控制台）"""
-    global _LOG_FILE, _LOG_PATH
-
-    if log_dir is None:
-        log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
-    os.makedirs(log_dir, exist_ok=True)
-
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    _LOG_PATH = os.path.join(log_dir, f"liars_bar_{ts}.log")
-    _LOG_FILE = open(_LOG_PATH, "w", encoding="utf-8")
-    _LOG_FILE.write(f"=== Liar's Bar {datetime.now().isoformat(timespec='seconds')} ===\n")
-    _LOG_FILE.flush()
-
-    builtins.print = game_print
-    atexit.register(close_game_logging)
-    return _LOG_PATH
-
-
-def game_print(*args, **kwargs):
-    """替代内置 print：写入日志；默认仍输出到控制台
-
-    log_plain: 可选，写入日志的纯文本（无 ANSI）；控制台仍用 args 拼接结果。
-    """
-    log_plain = kwargs.pop("log_plain", None)
-    sep = kwargs.get("sep", " ")
-    end = kwargs.get("end", "\n")
-    text = sep.join(str(a) for a in args) + end
-
-    if _LOG_FILE and not _LOG_FILE.closed:
-        if log_plain is not None:
-            log_text = log_plain if str(log_plain).endswith(end) else str(log_plain) + end
-        else:
-            log_text = _strip_ansi(text)
-        _LOG_FILE.write(log_text)
-        _LOG_FILE.flush()
-
-    target = kwargs.get("file")
-    if target is not None:
-        _ORIGINAL_PRINT(*args, **kwargs)
-    else:
-        _ORIGINAL_PRINT(*args, **{k: v for k, v in kwargs.items() if k != "file"})
-
-
-def close_game_logging():
-    global _LOG_FILE
-    if _LOG_FILE and not _LOG_FILE.closed:
-        _LOG_FILE.write(f"\n=== END {datetime.now().isoformat(timespec='seconds')} ===\n")
-        _LOG_FILE.close()
-        _LOG_FILE = None
+# 共享模块
+from common.logger import setup_game_logging, game_print, close_game_logging, original_print
+from common.client import create_client, API_KEY
+from common.engine import BasePlayer, BaseGame
 
 MAX_THOUGHTS = 20
 MAX_OPPONENT_NOTES = 15
+MAX_PROMPT_HISTORY_ROUNDS = 5  # 注入 LLM prompt 的公开历史最大轮数，超出部分仅记摘要
 
 CARD_TOKEN_RE = re.compile(r"Joker|J|Q|K|X", re.IGNORECASE)
 
@@ -102,20 +44,11 @@ THOUGHT_MAX_LEN = 100
 
 
 def _extract_thought(response: str) -> str:
-    """提取「总结」行作为思考记录，限制 100 字以内"""
+    """提取「总结」行作为思考记录，找不到则报错"""
     m = SUMMARY_LINE_RE.search(response)
     if m:
         return m.group(1).strip()[:THOUGHT_MAX_LEN]
-    kept = []
-    for line in response.strip().splitlines():
-        u = line.strip().upper()
-        if re.match(r"^(PLAY|CHALLENGE|PASS|唬人|表演|行为|总结)\s*[:：]", u):
-            continue
-        if u in ("PASS", "CHALLENGE", "PLAY"):
-            continue
-        kept.append(line)
-    text = "\n".join(kept).strip()
-    return (text[:THOUGHT_MAX_LEN] if text else response[:THOUGHT_MAX_LEN])
+    raise RuntimeError(f"AI 回复中未找到「总结:」行，回复：{response[:300]}")
 
 
 BLUFF_LINE_RE = re.compile(
@@ -129,7 +62,7 @@ def _parse_bluff_behavior(response: str) -> str:
     m = BLUFF_LINE_RE.search(response)
     if m:
         return m.group(1).strip().strip('"\'""')
-    return ""
+    raise RuntimeError(f"AI 回复中未找到「唬人:」/「表演:」/「行为:」行：{response[:300]}")
 
 
 BLUFF_PERSONAS = [
@@ -465,11 +398,8 @@ BULLET_NUM = 6
 
 class ReActAgent:
     def __init__(self, player_index: int = -1, game=None):
-        self.client = openai.Client(
-            api_key=os.getenv("DEEPSEEK_API_KEY"),
-            base_url="https://api.deepseek.com/v1",
-        )
-        
+        self.client = create_client()
+
         self.player_index = player_index
         self.game = game  # LiarsBar 实例，用于注册工具
         self.tools = {}   # 工具函数映射
@@ -505,21 +435,24 @@ class ReActAgent:
 【你的身份】你是玩家{self.player_index + 1}。查自己信息时传 player_number={self.player_index + 1}
 决策前可用 my_knowledge() 回顾历史；每次决策会写入你的思考记录
 
-【思考策略】
-1. 出牌前：分析手牌、场上已出的牌、对手剩余牌数
-2. 选择：出真目标或 Joker（均算诚实）积累信誉 / 出 Q、K 等非目标假牌唬人清牌
-3. 质疑时：权衡风险——质疑失败是你开枪；round_history 无牌面下的 actual，勿透视臆测
-4. 强疑点可 CHALLENGE：对手有说谎前科、上家声称 2-3 张、表演浮夸；勿因「可能出了 Joker」而质疑（Joker 合法）
-5. 宜 PASS：你目标+Joker 很多、上家只出 1 张且镇定、你已开过多次枪余弹不多
+【出牌】
+1. 先查 card_status，明确手牌中真目标牌 + Joker 的数量
+2. 真目标牌 + Joker = 诚实出牌（质疑翻牌后上家未说谎）；打出非目标非 Joker 牌并声称目标 = 说谎
+3. Joker 打出并声称为本轮目标 → 诚实出牌，质疑翻牌不判上家说谎
 
-【输出格式 — 严格遵守】
+【质疑】
+4. 质疑失败你开枪。依据手中牌 + 对手历史行为（说谎前科、错误质疑次数）综合判断
+5. 声称数≠实际消耗：被 PASS 的声称可能是假牌（不消耗 J/Joker），不能从声称总数推断牌池是否耗尽
+
+【输出格式 — 严格遵守，缺标签直接报错】
 工具调用阶段可自行分析；最终回复禁止长篇堆砌，按顺序输出：
 
 总结: [分析后用一句话说明理由，100字以内，不要重复工具原文]
 
-出牌时再接：
-唬人: [表演，一两句]
+出牌时必须严格按此顺序，每行一个标签：
+唬人: [一两句表演，你的语气/动作/台词]
 PLAY: 打出 [实际牌], 声称: "X张[目标牌]"
+⚠️ 表演内容必须以「唬人: 」开头独占一行，禁止写成无标签的括号段落
 
 质疑时：总结后一行 CHALLENGE 或 PASS（不要废话）
 
@@ -716,21 +649,36 @@ PLAY: 打出 [实际牌], 声称: "X张[目标牌]"
                     "content": result_str,
                 })
 
-        return "达到最大迭代次数，无法完成请求。"
+        raise RuntimeError(
+            f"ReActAgent 玩家{self.player_index + 1} 达到最大迭代次数 {self.max_iterations}，"
+            "无法完成请求"
+        )
 
 
-class Player:
+class Player(BasePlayer):
+    """骗子酒馆玩家 — 继承自 BasePlayer（多 AI 对抗游戏框架）"""
+
     def __init__(self, index: int, name: str, game=None):
-        self.index = index
-        self.name = name
-        self.cards = []
+        super().__init__(index, name)
+        self.cards: List[str] = []
         self.game = game  # LiarsBar 实例
         self.agent = ReActAgent(player_index=index, game=game)
         self.memory = PlayerMemory(owner_number=index + 1)
         self.bluff_persona = BLUFF_PERSONAS[index % len(BLUFF_PERSONAS)]
         self.bullet = random.randint(0, BULLET_NUM - 1)  # 0-5，对应6个子弹槽位置
         self.current = 0
-        self.alive = True
+        # self.alive 由 BasePlayer 管理
+
+    # ── 实现抽象方法 ──
+
+    def make_decision(self, game: BaseGame, **kwargs) -> Dict[str, Any]:
+        """框架要求的通用决策接口，委托到游戏专用的 get_decision()"""
+        return self.get_decision(
+            current_target_card=kwargs.get("current_target_card", ""),
+            last_action=kwargs.get("last_action"),
+            phase=kwargs.get("phase", "play"),
+            must_challenge=kwargs.get("must_challenge", False),
+        )
 
     def get_decision(
         self,
@@ -764,8 +712,11 @@ class Player:
             context += f"\n【你的记忆库摘要】\n{memory_text}\n"
 
         output_fmt = (
-            "\n【回复格式】先写「总结:」（≤100字，一句话理由），再写决策行；"
-            "勿输出长段分析过程。\n"
+            "\n【回复格式】严格按顺序输出，每行一个标签：\n"
+            "总结: <一句话理由，≤100字>\n"
+            "出牌时再接 唬人: <表演> 和 PLAY: 打出 [...] 声称: \"...\"\n"
+            "质疑时总结后一行 CHALLENGE 或 PASS\n"
+            "⚠️ 表演必须以「唬人: 」开头独占一行，禁止写成无标签段落。\n"
         )
 
         if phase == "play":
@@ -814,9 +765,10 @@ class Player:
                 hand.remove(c)
         if picked:
             return picked
-        if self.cards:
-            return [self.cards[0]]
-        return []
+        raise RuntimeError(
+            f"玩家{self.index} pick_cards_for_play: 决策 cards={decision.get('cards')} "
+            f"与手牌 {self.cards} 不匹配"
+        )
     
     def _parse_decision(
         self, response: str, target_card: str = None, phase: str = "play"
@@ -883,7 +835,11 @@ class Player:
                 "bluff": bluff,
             }
 
-        return {"action": "pass"}
+        if phase == "react":
+            return {"action": "pass"}  # react 阶段 PASS 是合法决策
+        raise RuntimeError(
+            f"玩家{self.index} 出牌阶段 AI 回复无法解析：{response[:300]}"
+        )
 
     def shoot(self):
         if self.current == self.bullet:
@@ -913,36 +869,56 @@ class Deck:
             player.cards = self.cards[card_index : card_index + 5]
             card_index += 5
 
-class LiarsBar:
+class LiarsBar(BaseGame):
+    """骗子酒馆 — 继承自 BaseGame（多 AI 对抗游戏框架）"""
+
     TARGET_CARDS = ["J", "Q", "K"]
-    
+
     def __init__(self):
-        self.players = []  # 延迟初始化，等self准备好
+        super().__init__()
         self.deck = Deck()
-        self.history = []  # 所有轮次历史
+        self.round_records: List[Dict] = []  # 所有轮次历史（替代 base.history，后者用于事件日志）
         self.round_history = []  # 当前轮次出牌记录
         self.revealed_card = []  # 当前轮次已翻开的牌
         self.current_target = None  # 当前轮目标牌
         self.current_player_idx = 0  # 当前行动玩家
-        self.round_num = 0  # 轮次数
         self.pending_play = None  # 待质疑的出牌
         self.round_active = False  # 本轮是否进行中
+        self.round_num = 0  # 轮次数（LiarsBar 专用，区别于 base.current_round）
         self._lap_played: set[int] = set()  # 本轮当前一圈已出过牌的玩家
         self._mid_round_status_shown = False  # 本轮是否已打过「全员出过牌」快照
 
+    # ── BaseGame 抽象方法实现 ──
+
     def init_players(self):
-        """初始化玩家（在self准备好后调用）"""
+        """创建 AI 玩家"""
         self.players = [Player(i, f"玩家{i + 1}", game=self) for i in range(PLAYER_NUM)]
 
+    def setup_round(self) -> bool:
+        """新一轮发牌; 同步 BaseGame.current_round 并显示状态"""
+        ok = self.new_round()
+        if ok:
+            self.current_round = self.round_num
+            self.player_status()
+        return ok
+
+    def check_end_condition(self) -> bool:
+        """检查终局条件"""
+        if self.get_winner():
+            self.ended = True
+            return True
+        return False
+
     def start(self):
-        """开始游戏"""
-        if not os.getenv("DEEPSEEK_API_KEY"):
+        """开始游戏 — 覆盖 BaseGame.start()"""
+        if not API_KEY:
             raise RuntimeError("请先设置环境变量 DEEPSEEK_API_KEY")
-        self.init_players()
+        super().start()  # 设置 start_time + print_intro + init_players
         print("🎮 骗子酒馆游戏开始！")
         print(f"玩家人数：{PLAYER_NUM}")
         print(f"目标牌序列：{' → '.join(self.TARGET_CARDS)} 循环")
         print("一轮 = 发牌后循环「出牌→下家质疑/放行」，直至发生质疑开枪；然后重新发牌")
+        return True
 
     def new_round(self):
         """新一轮：重新发牌，重置轮内状态"""
@@ -970,7 +946,7 @@ class LiarsBar:
         """质疑开枪后结束本轮，存档"""
         self.round_active = False
         self.pending_play = None
-        self.history.append({
+        self.round_records.append({
             "round": self.round_num,
             "target": self.current_target,
             "reason": reason,
@@ -1054,8 +1030,30 @@ class LiarsBar:
         return [self._public_play_view(a) for a in self.round_history]
 
     def get_public_history(self) -> list:
-        return [
-            {
+        """公开历史：只返回最近 N 轮完整记录，更早轮次压缩为摘要行"""
+        full = self.round_records
+        if len(full) <= MAX_PROMPT_HISTORY_ROUNDS:
+            recent = full
+            summary = []
+        else:
+            recent = full[-MAX_PROMPT_HISTORY_ROUNDS:]
+            # 压缩早期轮次：每轮一行摘要
+            summary = [
+                {
+                    "round": rec["round"],
+                    "summary": (
+                        f"第{rec['round']}轮（目标{rec.get('target','?')}）："
+                        f"{rec.get('reason','')}"
+                    ),
+                }
+                for rec in full[:-MAX_PROMPT_HISTORY_ROUNDS]
+            ]
+
+        result: list = []
+        if summary:
+            result.append({"earlier_rounds_summary": summary})
+        for rec in recent:
+            result.append({
                 "round": rec["round"],
                 "target": rec.get("target"),
                 "reason": rec.get("reason"),
@@ -1065,12 +1063,11 @@ class LiarsBar:
                     else e
                     for e in rec.get("events", [])
                 ],
-            }
-            for rec in self.history
-        ]
+            })
+        return result
 
     def build_challenge_hint(self, challenger_idx: int, pending_play: dict) -> str:
-        """给下家的质疑权衡提示（不含 actual，避免无脑质疑）"""
+        """给下家的质疑参考信息（仅客观数据，不做判断）"""
         who = pending_play["player"]
         pn = who + 1
         challenger = self.players[challenger_idx]
@@ -1082,53 +1079,21 @@ class LiarsBar:
         cc = pending_play.get("claimed_count", 1)
 
         lines = [
-            "【质疑权衡】质疑失败由你开枪。牌面朝下无法确知 actual，勿凭空断言。",
-            "强疑点再 CHALLENGE；证据一般或你余弹不多时宜 PASS。",
+            f"上家（玩家{pn}）打出 {cc} 张声称 {target}。",
+            f"你手中有 {good} 张可当 {target} 的牌（真牌+Joker），"
+            f"已开 {challenger.current}/{BULLET_NUM} 枪（剩余 {remaining} 格未击发）。",
         ]
-
-        if remaining <= 2:
-            lines.append(
-                f"- 你仅剩 {remaining} 格未击发，质疑失败极易暴毙，非铁证建议 PASS。"
-            )
-        elif challenger.current >= 2:
-            lines.append(
-                f"- 你已开枪 {challenger.current} 次，质疑须更谨慎。"
-            )
 
         opp = challenger.memory.opponents.get(pn, {})
         stats = opp.get("stats", {})
-        suspicion = 0
-
-        if stats.get("lie_caught", 0) > 0:
-            suspicion += 2
-            lines.append(f"- 玩家{pn} 有说谎前科，疑点+。")
-        if stats.get("plays", 0) >= 3 and stats.get("challenged", 0) == 0:
-            suspicion += 1
-            lines.append(f"- 玩家{pn} 多次出牌少被质疑，略可疑。")
-
-        if cc >= 3:
-            suspicion += 2
-            lines.append(f"- 上家声称 {cc} 张 {target}，偏激进，疑点+。")
-        elif cc == 2:
-            suspicion += 1
-
-        if good <= 1:
-            suspicion += 1
+        if stats:
             lines.append(
-                f"- 你手中可当 {target} 的牌很少（真{target}+Joker 共 {good} 张），"
-                f"上家大额声称时牌池余量偏紧（注：上家出 Joker 声称 {target} 仍算诚实）。"
+                f"玩家{pn} 历史统计：出牌 {stats.get('plays', 0)} 次，"
+                f"被质疑 {stats.get('challenged', 0)} 次，"
+                f"说谎被抓 {stats.get('lie_caught', 0)} 次，"
+                f"唬住质疑 {stats.get('bluff_success', 0)} 次，"
+                f"错误质疑 {stats.get('false_challenges', 0)} 次。"
             )
-        elif good >= 4 and cc == 1:
-            lines.append(
-                f"- 你手握较多 {target}（{good} 张）且上家只出 1 张，可先 PASS。"
-            )
-
-        if suspicion >= 3:
-            lines.append("- 综合：疑点偏多，可考虑 CHALLENGE。")
-        elif suspicion <= 0 and good >= 3:
-            lines.append("- 综合：疑点较少，倾向 PASS。")
-        else:
-            lines.append("- 综合：疑点中等，CHALLENGE / PASS 均可，慎判。")
 
         return "\n".join(lines)
 
@@ -1256,14 +1221,11 @@ class LiarsBar:
 
         # phase == play
         if decision.get("action") != "play":
-            print(f"  ⚠️ 玩家{pn} 未出牌，强制出 1 张")
-            decision = {"action": "play", "cards": [player.cards[0]], "claimed": self.current_target}
+            raise RuntimeError(f"玩家{pn} 出牌阶段 AI 未返回 play 决策：{decision}")
 
         cards = player.pick_cards_for_play(decision)
         if not cards:
-            print(f"  ⚠️ 玩家{pn} 无牌可出，跳过")
-            self._advance_turn(player_idx)
-            return True
+            raise RuntimeError(f"玩家{pn} 手牌为空或决策 cards 不合法：{decision.get('cards')}")
 
         claimed = decision.get("claimed", self.current_target)
         claimed_count = decision.get("claimed_count", len(cards))
@@ -1337,22 +1299,29 @@ class LiarsBar:
             self._finish_round("步数超限")
         return True
 
-    def run_game(self, max_rounds: int = 20):
-        """运行完整对局"""
-        while self.round_num < max_rounds:
-            if not self.new_round():
-                break
-            self.player_status()
-            if not self.run_round():
-                break
-            self.player_status()
-
+    def print_summary(self) -> None:
+        """游戏结束总结 — 覆盖 BaseGame.print_summary()"""
         winner = self.get_winner()
         if winner:
             print(f"\n🏆 游戏结束！胜者：{winner.name}（玩家{winner.index + 1}）")
+            print(f"  总轮数: {self.round_num}")
+            if self.start_time:
+                duration = (datetime.now() - self.start_time).total_seconds()
+                print(f"  游戏时长: {duration:.2f}秒")
         else:
             alive = [p for p in self.players if p.alive]
             print(f"\n⏹️ 游戏停止。存活 {len(alive)} 人")
+
+    def _finalize(self):
+        """结算并返回结果"""
+        self.ended = True
+        winner = self.get_winner()
+        return {
+            "winner": winner.name if winner else None,
+            "winner_index": winner.index if winner else None,
+            "rounds": self.round_num,
+            "alive_count": len(self.get_alive_players()),
+        }
 
     def play_card(
         self,
@@ -1518,21 +1487,36 @@ class LiarsBar:
         
         print("=" * 65)
 
-liars_bar = LiarsBar()
 # ===================================================================
-# 第三部分： 工具函数
-# ===================================================================
-
-
-
-
-# ===================================================================
-# 第四部分： 调试
+# 主程序入口
 # ===================================================================
 if __name__ == "__main__":
-    log_path = setup_game_logging()
-    _ORIGINAL_PRINT(f"📝 日志文件: {log_path}")
+    import argparse
+
+    parser = argparse.ArgumentParser(description="骗子酒馆 - AI 对战")
+    parser.add_argument(
+        "--players",
+        type=int,
+        default=PLAYER_NUM,
+        help=f"玩家人数（默认 {PLAYER_NUM}）",
+    )
+    parser.add_argument(
+        "--max-rounds",
+        type=int,
+        default=10,
+        help="最大轮数（默认 10）",
+    )
+    args = parser.parse_args()
+
+    # 玩家人数通过全局常量控制（如需动态调整可在此注入）
+    if args.players != PLAYER_NUM:
+        original_print(f"⚠️ 当前版本仅支持 {PLAYER_NUM} 人，已忽略 --players {args.players}")
+
+    # 设置日志系统
+    log_path = setup_game_logging("liars_bar")
+    original_print(f"📝 日志文件: {log_path}")
+
     game = LiarsBar()
-    game.start()
-    game.run_game(max_rounds=10)
+    game.run(max_rounds=args.max_rounds)
+
     close_game_logging()
