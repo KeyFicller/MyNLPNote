@@ -93,6 +93,10 @@ deactivate
 | 第29课 | 智能客服综合实战 | `08_intelligent_customer_service.py` |
 | 第30课 | MCP 自定义 Server | `09_mcp_server.py` |
 | 第31课 | Agent Skills 编写 | `10_agent_skills.py` |
+| 第32课 | LangChain 进阶（DeepSeek 接入） | `11_langchain_advanced.py` |
+| 第33课 | LangSmith 追踪与可观测性 | `12_langsmith.py` |
+| 第34课 | 消息历史与多轮对话 | `13_messages_history.py` |
+| 第35课 | LangChain Prompt 模板 | `14_langchain_prompt.py` |
 
 ---
 
@@ -141,8 +145,9 @@ python toy/01_whos_undercover.py --players 8 --undercovers 3 --max-rounds 20
 | 深度学习（PyTorch） | 已完成 |
 | NLP 与预训练模型 | 已完成 |
 | LLM 应用（RAG / Agent / Function Calling / MCP / Skills） | 已完成 |
+| LangChain 进阶（DeepSeek / LangSmith / 多轮对话 / Prompt） | 进行中 |
 | 趣味 AI 游戏（toy） | 进行中 |
 
 ---
 
-*最后更新：2026-06-04（第31课 Agent Skills）*
+*最后更新：2026-07-04（第35课 LangChain Prompt 模板）*
