@@ -23,11 +23,13 @@
 
 ## 1. 环境配置
 
+> 后续 LangChain 实战课（第34–38课等）共用本节，不再逐课重复。
+
 ### 1.1 依赖
 
 ```bash
 source activate_env.sh
-pip install langchain langchain-deepseek langchain-openai rich
+pip install langchain langchain-deepseek langchain-openai langchain-core langsmith pydantic rich
 ```
 
 ### 1.2 环境变量

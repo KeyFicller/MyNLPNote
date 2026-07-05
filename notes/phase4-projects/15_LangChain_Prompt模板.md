@@ -3,7 +3,8 @@
 **项目**: ChatPromptTemplate 与多轮 Prompt 组装  
 **技术栈**: LangChain, langchain-core, langchain-deepseek, ChatDeepSeek  
 **示例代码**: `examples/llm-apps/14_langchain_prompt.py`  
-**前置课程**: 第34课 消息历史与多轮对话、第19课 LangChain 基础（Prompt Template 概念）
+**前置课程**: 第34课 消息历史与多轮对话、第19课 LangChain 基础（Prompt Template 概念）  
+**环境与运行**：见 [第32课 §1 环境配置](12_LangChain进阶与DeepSeek接入.md#1-环境配置)；本课 `python examples/llm-apps/14_langchain_prompt.py`（`main()` 中注释切换演示函数）
 
 ---
 
@@ -47,44 +48,9 @@ messages = [
 
 ---
 
-## 2. 环境配置
+## 2. 模板格式化 — `_test_chat_prompt_format`
 
-### 2.1 依赖
-
-```bash
-source activate_env.sh
-pip install langchain langchain-deepseek langchain-core
-```
-
-### 2.2 环境变量
-
-| 变量 | 必需 | 说明 |
-|------|------|------|
-| `DEEPSEEK_API_KEY` | ✅ | DeepSeek API 密钥 |
-| `DEEPSEEK_BASE_URL` | 可选 | 自定义 API 地址 |
-
-### 2.3 运行
-
-```bash
-python examples/llm-apps/14_langchain_prompt.py
-```
-
-`main()` 中通过注释切换四个演示函数，默认运行 `_test_chat_prompt_placeholder()`：
-
-```python
-# _test_chat_prompt_format()
-# _test_chat_prompt_initialization()
-# _test_chat_prompt_partial()
-_test_chat_prompt_placeholder()
-```
-
-取消注释即可逐项体验。
-
----
-
-## 3. 模板格式化 — `_test_chat_prompt_format`
-
-### 3.1 定义模板
+### 2.1 定义模板
 
 ```python
 prompt_template = ChatPromptTemplate.from_messages(
@@ -97,7 +63,7 @@ prompt_template = ChatPromptTemplate.from_messages(
 
 元组格式 `("role名", "内容模板")` 是 LangChain 推荐的简洁写法。`{role}`、`{behavior}`、`{input}` 为**输入变量**，调用时再填入。
 
-### 3.2 三种渲染方式
+### 2.2 三种渲染方式
 
 | 方法 | 返回类型 | 能否直接 `llm.invoke()` | 说明 |
 |------|----------|-------------------------|------|
@@ -131,17 +97,17 @@ prompt = prompt_template.format_messages(
 
 **实践建议**：在 Chain 或需要类型安全的场景用 `invoke`；调试时可 `print(format_messages(...))` 查看最终 Message 结构。
 
-### 3.3 人设即变量
+### 2.3 人设即变量
 
 同一模板，换三组变量 → 三种完全不同的回复风格（杠精 / 马屁精 / 社恐）。这说明 **system 内容参数化** 是快速切换 Agent 人设的常用手段，智能客服、多角色助手都基于此模式。
 
 ---
 
-## 4. 多种初始化方式 — `_test_chat_prompt_initialization`
+## 3. 多种初始化方式 — `_test_chat_prompt_initialization`
 
 LangChain 允许用不同 API 表达**同一件事**，理解等价关系有助于读官方文档和第三方示例。
 
-### 4.1 元组写法（最常用）
+### 3.1 元组写法（最常用）
 
 ```python
 ChatPromptTemplate.from_messages([
@@ -150,7 +116,7 @@ ChatPromptTemplate.from_messages([
 ])
 ```
 
-### 4.2 MessagePromptTemplate 写法
+### 3.2 MessagePromptTemplate 写法
 
 ```python
 ChatPromptTemplate.from_messages([
@@ -161,7 +127,7 @@ ChatPromptTemplate.from_messages([
 
 与元组写法**完全等价**，适合需要单独复用某一类 Message 模板的场景。
 
-### 4.3 嵌套 from_messages（固定内容、无变量）
+### 3.3 嵌套 from_messages（固定内容、无变量）
 
 ```python
 ChatPromptTemplate.from_messages([
@@ -175,7 +141,7 @@ prompt = prompt_template.invoke({})  # 无输入变量
 
 ---
 
-## 5. 部分预填 — `_test_chat_prompt_partial`
+## 4. 部分预填 — `_test_chat_prompt_partial`
 
 当多个场景共享同一骨架、只有部分变量不同时，可用 `partial()` **提前绑定**部分变量，得到「子模板」。
 
@@ -208,11 +174,11 @@ IT 子模板变量:  user_input          （department、role 已固定）
 
 ---
 
-## 6. 历史消息占位 — `_test_chat_prompt_placeholder`
+## 5. 历史消息占位 — `_test_chat_prompt_placeholder`
 
 多轮对话需要把**已有对话**插入 Prompt。第34课在 Python 列表里 `append`；本课用模板占位符，更适合与 Chain、Memory 组件对接。
 
-### 6.1 元组 placeholder
+### 5.1 元组 placeholder
 
 ```python
 prompt_template = ChatPromptTemplate.from_messages([
@@ -231,7 +197,7 @@ prompt = prompt_template.invoke({
 
 `("placeholder", "{conversation}")` 表示：`conversation` 传入的内容会**展开**为多条 Message，而不是一条字符串。
 
-### 6.2 MessagesPlaceholder（推荐）
+### 5.2 MessagesPlaceholder（推荐）
 
 ```python
 from langchain_core.prompts import MessagesPlaceholder
@@ -255,7 +221,7 @@ prompt = prompt_template.invoke({
 - 元组列表：`("user", "...")` / `("assistant", "...")`
 - Message 对象：`HumanMessage` / `AIMessage`
 
-### 6.3 模板拼接 `+`
+### 5.3 模板拼接 `+`
 
 ```python
 prompt_template1 = ChatPromptTemplate.from_messages([
@@ -277,7 +243,7 @@ prompt_template1          prompt_template2
 
 **适用场景**：system 固定、历史动态——与第34课「system 始终保留 + 截断对话」的设计一致；这里把「历史槽位」写进模板，便于接入 `RunnableWithMessageHistory` 等封装。
 
-### 6.4 与第34课的关系
+### 5.4 与第34课的关系
 
 ```
 第34课  messages 列表 append + 截断     →  命令行聊天循环，裸数据结构
@@ -288,7 +254,7 @@ prompt_template1          prompt_template2
 
 ---
 
-## 7. 整体数据流
+## 6. 整体数据流
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -316,7 +282,7 @@ template_a + template_b   →  模块化拼接 system 与 history 段
 
 ---
 
-## 8. 与前面课程的关系
+## 7. 与前面课程的关系
 
 ```
 第19课 PromptTemplate        →  文本补全模板、Few-shot 概念
@@ -331,7 +297,7 @@ template_a + template_b   →  模块化拼接 system 与 history 段
 
 ---
 
-## 9. 常见问题
+## 8. 常见问题
 
 ### Q1: `invoke` 和 `format_messages` 选哪个？
 
@@ -359,7 +325,7 @@ template_a + template_b   →  模块化拼接 system 与 history 段
 
 ---
 
-## 10. 动手练习
+## 9. 动手练习
 
 1. **切换演示**：依次取消注释四个 `_test_*` 函数，观察不同 API 的输出差异
 2. **新人设**：在 `_test_chat_prompt_format` 增加第四组变量（如「翻译官」），对比回复
@@ -369,7 +335,7 @@ template_a + template_b   →  模块化拼接 system 与 history 段
 
 ---
 
-## 11. 参考
+## 10. 参考
 
 - 示例代码：`examples/llm-apps/14_langchain_prompt.py`
 - 前置笔记：`notes/phase4-projects/14_消息历史与多轮对话.md`

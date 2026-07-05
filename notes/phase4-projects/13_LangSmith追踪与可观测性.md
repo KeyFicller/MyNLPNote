@@ -3,7 +3,8 @@
 **项目**: LangChain 应用调试与监控  
 **技术栈**: LangChain, langchain-deepseek, LangSmith  
 **示例代码**: `examples/llm-apps/12_langsmith.py`  
-**前置课程**: 第32课 LangChain 进阶 — DeepSeek 接入与多种调用方式
+**前置课程**: 第32课 LangChain 进阶 — DeepSeek 接入与多种调用方式  
+**环境与运行**：DeepSeek 与虚拟环境见 [第32课 §1 环境配置](12_LangChain进阶与DeepSeek接入.md#1-环境配置)；本课 `python examples/llm-apps/12_langsmith.py`
 
 ---
 
@@ -58,50 +59,30 @@ LangSmith 是 LangChain 官方提供的 **LLM 应用开发平台**，核心能�
 
 ---
 
-## 2. 环境配置
+## 2. LangSmith 额外配置
 
-### 2.1 依赖
-
-```bash
-source activate_env.sh
-pip install langchain langchain-deepseek langsmith
-```
-
-`langsmith` 通常随 LangChain 生态一并安装；若追踪未生效，可显式安装。
-
-### 2.2 环境变量
+除第32课中的 DeepSeek 配置外，本课还需以下 LangSmith 环境变量：
 
 | 变量 | 必需 | 说明 |
 |------|------|------|
-| `DEEPSEEK_API_KEY` | ✅ | DeepSeek API 密钥（调用模型） |
-| `DEEPSEEK_BASE_URL` | 可选 | 自定义 API 地址 |
 | `LANGSMITH_API_KEY` | ✅（追踪） | LangSmith 控制台生成的 API Key |
 | `LANGSMITH_PROJECT` | 推荐 | 项目名，Trace 归档到该项目下 |
 | `LANGSMITH_TRACING` | ✅（追踪） | 设为 `true` 开启追踪 |
 | `LANGSMITH_ENDPOINT` | 可选 | 自定义 LangSmith 端点（企业部署） |
 
-可在项目根目录 `.env` 或 shell 中配置：
-
 ```bash
 export LANGSMITH_TRACING=true
 export LANGSMITH_API_KEY=lsv2_pt_...
 export LANGSMITH_PROJECT=allinai-demo
-export DEEPSEEK_API_KEY=sk-...
 ```
 
 > **说明**：旧版文档使用 `LANGCHAIN_TRACING_V2=true`，LangChain 新版本统一为 `LANGSMITH_TRACING`。本仓库示例采用后者。
 
-### 2.3 获取 LangSmith API Key
+### 2.1 获取 LangSmith API Key
 
 1. 注册 [LangSmith](https://smith.langchain.com/)
 2. 进入 **Settings → API Keys**
 3. 创建 Key，写入 `LANGSMITH_API_KEY`
-
-### 2.4 运行
-
-```bash
-python examples/llm-apps/12_langsmith.py
-```
 
 脚本会先打印当前 LangSmith 配置，再执行一次带元数据的 `invoke` 调用。成功后可在 LangSmith 控制台对应 Project 中看到新的 Trace。
 

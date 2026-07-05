@@ -3,7 +3,8 @@
 **项目**: `@tool` 装饰器与 `bind_tools` 工具调用  
 **技术栈**: LangChain, langchain-core, langchain-deepseek, ChatDeepSeek  
 **示例代码**: `examples/llm-apps/15_langchain_tools.py`  
-**前置课程**: 第28课 Function Calling 与 Tools、第35课 LangChain Prompt 模板
+**前置课程**: 第28课 Function Calling 与 Tools、第35课 LangChain Prompt 模板  
+**环境与运行**：见 [第32课 §1 环境配置](12_LangChain进阶与DeepSeek接入.md#1-环境配置)；本课 `python examples/llm-apps/15_langchain_tools.py`（`main()` 中注释切换三个演示）
 
 ---
 
@@ -64,43 +65,9 @@ AIMessage（可能含 tool_calls，content 可能为空）
 
 ---
 
-## 2. 环境配置
+## 2. `@tool` 装饰器 — 最简定义
 
-### 2.1 依赖
-
-```bash
-source activate_env.sh
-pip install langchain langchain-deepseek langchain-core rich
-```
-
-### 2.2 环境变量
-
-| 变量 | 必需 | 说明 |
-|------|------|------|
-| `DEEPSEEK_API_KEY` | ✅ | DeepSeek API 密钥 |
-| `DEEPSEEK_BASE_URL` | 可选 | 自定义 API 地址 |
-
-### 2.3 运行
-
-```bash
-python examples/llm-apps/15_langchain_tools.py
-```
-
-`main()` 中通过注释切换三个演示函数，默认运行 `_test_tool_call_with_tool_modiifier()`：
-
-```python
-# _test_tool_call_with_tool_specification()
-# _test_tool_call_without_tool_specification()
-_test_tool_call_with_tool_modiifier()
-```
-
-取消注释即可逐项体验。
-
----
-
-## 3. `@tool` 装饰器 — 最简定义
-
-### 3.1 定义与直接调用
+### 2.1 定义与直接调用
 
 ```python
 from langchain_core.tools import tool
@@ -124,7 +91,7 @@ result = get_current_time.invoke({"city": "北京"})
 
 `invoke` 接受 dict 参数，与模型返回的 `tool_calls[0]["args"]` 结构一致。
 
-### 3.2 绑定模型并触发调用 — `_test_tool_call_with_tool_specification`
+### 2.2 绑定模型并触发调用 — `_test_tool_call_with_tool_specification`
 
 ```python
 model_with_tools = _chat_deepseek().bind_tools([get_current_time])
@@ -134,7 +101,7 @@ response = model_with_tools.invoke(messages)
 
 `bind_tools` 在底层把 Tool 列表序列化为 OpenAI `tools` 格式，发给 DeepSeek；模型若判断需要查时间，会在 `AIMessage` 里带上 `tool_calls`，而不是直接回答。
 
-### 3.3 读取 tool_calls 并执行
+### 2.3 读取 tool_calls 并执行
 
 ```python
 if response.tool_calls:
@@ -157,9 +124,9 @@ if response.tool_calls:
 
 ---
 
-## 4. 无 `@tool`：普通函数 + `convert_to_openai_tool`
+## 3. 无 `@tool`：普通函数 + `convert_to_openai_tool`
 
-### 4.1 手写 docstring 的函数
+### 3.1 手写 docstring 的函数
 
 ```python
 def get_weather(city: str) -> str:
@@ -203,7 +170,7 @@ rprint(converted_tool)
 }
 ```
 
-### 4.2 bind_tools 的两种写法 — `_test_tool_call_without_tool_specification`
+### 3.2 bind_tools 的两种写法 — `_test_tool_call_without_tool_specification`
 
 ```python
 # 写法 A：传入 convert 后的 dict（本示例打印 schema 用）
@@ -218,9 +185,9 @@ response = model_with_tools.invoke(messages)
 
 ---
 
-## 5. `parse_docstring` 与参数描述 — `_test_tool_call_with_tool_modiifier`
+## 4. `parse_docstring` 与参数描述 — `_test_tool_call_with_tool_modiifier`
 
-### 5.1 带 Args 的 docstring
+### 4.1 带 Args 的 docstring
 
 ```python
 @tool(description="加法函数", parse_docstring=True)
@@ -251,7 +218,7 @@ rprint(convert_to_openai_tool(add))
 
 模型会看到 `a`、`b` 各有清晰描述，有利于在「计算 1 + 2」这类问题上正确选工具。
 
-### 5.2 docstring 格式注意
+### 4.2 docstring 格式注意
 
 示例代码中的注释强调：
 
@@ -261,7 +228,7 @@ rprint(convert_to_openai_tool(add))
 
 `parse_docstring` 依赖 [Google 风格](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings) 结构：`Args:` / `Returns:` 前需要**真正的空行**分隔摘要段与参数段，否则解析可能失败或丢失参数说明。
 
-### 5.3 触发计算类 tool call
+### 4.3 触发计算类 tool call
 
 ```python
 messages = [HumanMessage(content="计算 1 + 2 的和")]
@@ -273,7 +240,7 @@ rprint(response)
 
 ---
 
-## 6. 核心 API 对照
+## 5. 核心 API 对照
 
 | API | 作用 | 本课出现位置 |
 |-----|------|-------------|
@@ -286,7 +253,7 @@ rprint(response)
 
 ---
 
-## 7. 数据流总览
+## 6. 数据流总览
 
 ```
 Python 函数
@@ -321,7 +288,7 @@ Python 函数
 
 ---
 
-## 8. 与前面课程的关系
+## 7. 与前面课程的关系
 
 ```
 第28课 Function Calling     →  OpenAI tools JSON、手写解析 ✅ 原理
@@ -337,7 +304,7 @@ Python 函数
 
 ---
 
-## 9. 常见问题
+## 8. 常见问题
 
 ### Q1: `bind_tools` 和请求里传 `tools=` 一样吗？
 
@@ -369,7 +336,7 @@ Python 函数
 
 ---
 
-## 10. 动手练习
+## 9. 动手练习
 
 1. **跑通闭环**：取消注释 `_test_tool_call_with_tool_specification`，确认终端先打印 `tool_calls` 再打印最终时间
 2. **对比 Schema**：分别 `rprint(convert_to_openai_tool(get_current_time))` 与 `convert_to_openai_tool(add)`，观察 `parse_docstring` 对 `parameters` 的影响
@@ -379,7 +346,7 @@ Python 函数
 
 ---
 
-## 11. 参考
+## 10. 参考
 
 - 示例代码：`examples/llm-apps/15_langchain_tools.py`
 - Function Calling 原理：`notes/phase4-projects/07_Function_Calling与Tools使用.md`

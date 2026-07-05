@@ -3,7 +3,8 @@
 **项目**: `args_schema` 与 Pydantic / JSON Schema 参数定义  
 **技术栈**: LangChain, langchain-core, Pydantic, langchain-deepseek, ChatDeepSeek  
 **示例代码**: `examples/llm-apps/16_langchain_tool_schema.py`  
-**前置课程**: 第36课 LangChain Tools 工具、第28课 Function Calling 与 Tools
+**前置课程**: 第36课 LangChain Tools 工具、第28课 Function Calling 与 Tools  
+**环境与运行**：见 [第32课 §1 环境配置](12_LangChain进阶与DeepSeek接入.md#1-环境配置)；本课 `python examples/llm-apps/16_langchain_tool_schema.py`
 
 ---
 
@@ -72,35 +73,9 @@ AIMessage.tool_calls[0]["args"]  ← 模型按 Schema 填参
 
 ---
 
-## 2. 环境配置
+## 2. Pydantic BaseModel — `get_weather`
 
-### 2.1 依赖
-
-```bash
-source activate_env.sh
-pip install langchain langchain-deepseek langchain-core pydantic rich
-```
-
-### 2.2 环境变量
-
-| 变量 | 必需 | 说明 |
-|------|------|------|
-| `DEEPSEEK_API_KEY` | ✅ | DeepSeek API 密钥 |
-| `DEEPSEEK_BASE_URL` | 可选 | 自定义 API 地址 |
-
-### 2.3 运行
-
-```bash
-python examples/llm-apps/16_langchain_tool_schema.py
-```
-
-脚本依次演示 `get_weather`（Pydantic）与 `get_weather2`（JSON dict），各打印 Schema 并 `bind_tools` 发起一次调用。观察 `rich.print` 输出的 `tool_calls` 中 `args` 字段。
-
----
-
-## 3. Pydantic BaseModel — `get_weather`
-
-### 3.1 定义输入模型
+### 2.1 定义输入模型
 
 ```python
 from typing import Literal
@@ -126,7 +101,7 @@ class WeatherInput(BaseModel):
 
 `Field(description=...)` 会进入 JSON Schema 的 `description`，**模型靠它理解参数语义**（与第28课 `parameters.properties.*.description` 相同）。
 
-### 3.2 绑定到 @tool
+### 2.2 绑定到 @tool
 
 ```python
 @tool(args_schema=WeatherInput)
@@ -140,7 +115,7 @@ def get_weather(city: str, unit: str, fore_cast: bool = False) -> str:
 - **函数默认值**宜与 Schema 一致，避免校验通过但运行时行为意外
 - `args_schema` 优先于从签名自动推断；docstring 仍可作为 tool 的 `description`
 
-### 3.3 查看生成的 OpenAI Tool
+### 2.3 查看生成的 OpenAI Tool
 
 ```python
 rprint(convert_to_openai_tool(get_weather))
@@ -162,7 +137,7 @@ rprint(convert_to_openai_tool(get_weather))
 
 只有 `unit` 在 `required` 里——因为 `city` 和 `fore_cast` 有默认值。用户问「明天上海天气」时，模型可能只传 `{"unit": "C", "city": "上海"}` 或补上 `fore_cast`。
 
-### 3.4 触发调用
+### 2.4 触发调用
 
 ```python
 messages = [HumanMessage(content="明天上海是什么天气？")]
@@ -174,9 +149,9 @@ rprint(response)
 
 ---
 
-## 4. 原生 JSON Schema dict — `get_weather2`
+## 3. 原生 JSON Schema dict — `get_weather2`
 
-### 4.1 手写 parameters
+### 3.1 手写 parameters
 
 ```python
 json_schema = {
@@ -202,7 +177,7 @@ json_schema = {
 
 > 示例里变量名 `json_schema` 与 `from pydantic import json_schema` 同名，后者会被 dict 覆盖；若需使用 Pydantic 的 `json_schema` 工具函数，建议 dict 改用 `weather_json_schema` 等名称。
 
-### 4.2 绑定到 @tool
+### 3.2 绑定到 @tool
 
 ```python
 @tool(args_schema=json_schema)
@@ -213,7 +188,7 @@ def get_weather2(city: str, unit: str, fore_cast: bool = False) -> str:
 
 LangChain 接受 **Pydantic 模型类** 或 **符合 JSON Schema 的 dict** 作为 `args_schema`。
 
-### 4.3 对比与调用
+### 3.3 对比与调用
 
 ```python
 rprint(convert_to_openai_tool(get_weather2))
@@ -224,7 +199,7 @@ response = _chat_deepseek().bind_tools([get_weather2]).invoke(messages)
 
 ---
 
-## 5. 两种写法如何选择？
+## 4. 两种写法如何选择？
 
 | 维度 | Pydantic `BaseModel` | JSON Schema `dict` |
 |------|----------------------|---------------------|
@@ -239,16 +214,16 @@ response = _chat_deepseek().bind_tools([get_weather2]).invoke(messages)
 
 ---
 
-## 6. Schema 设计要点
+## 5. Schema 设计要点
 
-### 6.1 description 是关键
+### 5.1 description 是关键
 
 模型**不执行**你的 Python 类型，只读 JSON Schema 文本。`Field(description="...")` 或 `properties.*.description` 要写清：
 - 参数含义（「城市名称」而非「city」）
 - 格式约束（日期格式、单位含义）
 - 何时需要该参数（如 `fore_cast`：是否需要多日预报）
 
-### 6.2 required 与 default
+### 5.2 required 与 default
 
 ```python
 # 有 default → 一般不必列入 required
@@ -260,7 +235,7 @@ unit: Literal["C", "F"]
 
 `required: ["unit"]` 表示模型**必须**提供 `unit`；`city` 可省略，运行时 LangChain/Pydantic 用默认值 `"北京"`。
 
-### 6.3 枚举：Literal vs enum
+### 5.3 枚举：Literal vs enum
 
 ```python
 # Pydantic
@@ -272,13 +247,13 @@ unit: Literal["C", "F"]
 
 避免用裸 `str` 表示枚举，否则模型可能传入 `"celsius"` 等非法值。
 
-### 6.4 函数签名与 Schema 一致
+### 5.4 函数签名与 Schema 一致
 
 `args_schema` 定义的字段，函数应能按名接收；类型不匹配的调用可能在 `tool.invoke` 时由 Pydantic 校验失败。改 Schema 时**同步改函数参数**。
 
 ---
 
-## 7. 核心 API 对照
+## 6. 核心 API 对照
 
 | API | 作用 | 本课出现位置 |
 |-----|------|-------------|
@@ -291,7 +266,7 @@ unit: Literal["C", "F"]
 
 ---
 
-## 8. 与前面课程的关系
+## 7. 与前面课程的关系
 
 ```
 第28课 Function Calling     →  手写 parameters JSON Schema ✅ 原理
@@ -305,7 +280,7 @@ Agent / LCEL                →  tools 列表统一走同一套 Schema
 
 ---
 
-## 9. 常见问题
+## 8. 常见问题
 
 ### Q1: 有 `args_schema` 还要写函数参数吗？
 
@@ -333,7 +308,7 @@ Pydantic 嵌套模型即可，例如 `class Address(BaseModel): ...` 再 `locati
 
 ---
 
-## 10. 动手练习
+## 9. 动手练习
 
 1. **打印对比**：运行脚本，并排比较 `get_weather` 与 `get_weather2` 的 `parameters`，确认 `required` / `enum` / `default` 一致
 2. **改必填**：把 `unit` 也加上 `default="C"`，观察 `required` 是否变为空数组，再问同一问题看 `args` 变化
@@ -344,7 +319,7 @@ Pydantic 嵌套模型即可，例如 `class Address(BaseModel): ...` 再 `locati
 
 ---
 
-## 11. 参考
+## 10. 参考
 
 - 示例代码：`examples/llm-apps/16_langchain_tool_schema.py`
 - 前置笔记：`notes/phase4-projects/16_LangChain_Tools工具.md`
