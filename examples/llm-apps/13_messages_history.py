@@ -6,17 +6,7 @@
 
 import os
 
-from langchain_deepseek import ChatDeepSeek
-
-MODEL = "deepseek-v4-pro"
-
-
-def _api_base() -> str | None:
-    return os.getenv("DEEPSEEK_BASE_URL")
-
-
-def _api_key() -> str | None:
-    return os.getenv("DEEPSEEK_API_KEY")
+from deepseek_client import api_key, chat_deepseek
 
 def _langsmith_config() -> dict:
     return {
@@ -26,14 +16,6 @@ def _langsmith_config() -> dict:
         "tracing": os.getenv("LANGSMITH_TRACING"),
     }
 
-
-def _chat_deepseek() -> ChatDeepSeek:
-    kwargs: dict = {"model": MODEL, "api_key": _api_key()}
-    if base := _api_base():
-        kwargs["api_base"] = base
-
-
-    return ChatDeepSeek(**kwargs)
 
 def _maintain_messages(messages: list[dict], memory_round = 2) -> None:
     system_messages = [msg for msg in messages if msg["role"] == "system"]
@@ -45,7 +27,7 @@ def _maintain_messages(messages: list[dict], memory_round = 2) -> None:
 EXIT_WORD = "quit"
 
 def main() -> None:
-    if not _api_key():
+    if not api_key():
         print("⚠️  未设置 DEEPSEEK_API_KEY，请在 .env 或环境变量中配置")
     print("=" * 60)
 
@@ -77,7 +59,7 @@ def main() -> None:
         memory_messages = _maintain_messages(messages, memory_round=3)
         reply_content = ""
 
-        for chunk in _chat_deepseek().stream(memory_messages):
+        for chunk in chat_deepseek().stream(memory_messages):
             if chunk.content:
                 print(chunk.content, end="", flush=True)
                 reply_content += chunk.content

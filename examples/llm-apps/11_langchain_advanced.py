@@ -7,18 +7,16 @@ LangChain 进阶：DeepSeek 接入与多种调用方式
 
 import asyncio
 import inspect
-import os
 import sys
 import time
 
 import langchain
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
-from langchain_deepseek import ChatDeepSeek
 from langchain_openai import ChatOpenAI
 from rich import print as rprint
 
-MODEL = "deepseek-v4-pro"
+from deepseek_client import MODEL, api_base, api_key, chat_deepseek
 
 DEMOS: dict[str, tuple[str, str]] = {
     "1": ("API Specifications", "ChatDeepSeek 直连"),
@@ -33,24 +31,9 @@ DEMOS: dict[str, tuple[str, str]] = {
 }
 
 
-def _api_base() -> str | None:
-    return os.getenv("DEEPSEEK_BASE_URL")
-
-
-def _api_key() -> str | None:
-    return os.getenv("DEEPSEEK_API_KEY")
-
-
-def _chat_deepseek() -> ChatDeepSeek:
-    kwargs: dict = {"model": MODEL, "api_key": _api_key()}
-    if base := _api_base():
-        kwargs["api_base"] = base
-    return ChatDeepSeek(**kwargs)
-
-
 def _chat_openai() -> ChatOpenAI:
-    kwargs: dict = {"model": MODEL, "api_key": _api_key()}
-    if base := _api_base():
+    kwargs: dict = {"model": MODEL, "api_key": api_key()}
+    if base := api_base():
         kwargs["base_url"] = base
     return ChatOpenAI(**kwargs)
 
@@ -58,9 +41,9 @@ def _chat_openai() -> ChatOpenAI:
 def _init_chat_model():
     kwargs: dict = {
         "model": f"deepseek:{MODEL}",
-        "api_key": _api_key(),
+        "api_key": api_key(),
     }
-    if base := _api_base():
+    if base := api_base():
         kwargs["api_base"] = base
     return init_chat_model(**kwargs)
 
@@ -69,7 +52,7 @@ def demo_api_specifications() -> None:
     print("\n" + "=" * 60)
     print("API Specifications — ChatDeepSeek")
     print("=" * 60)
-    llm = _chat_deepseek()
+    llm = chat_deepseek()
     response = llm.invoke("Introduce yourself with single sentence.")
     print(response.content)
 
@@ -140,7 +123,7 @@ def demo_stream_response() -> None:
     print("\n" + "=" * 60)
     print("Stream Response — ChatDeepSeek")
     print("=" * 60)
-    llm = _chat_deepseek()
+    llm = chat_deepseek()
     for chunk in llm.stream("Introduce yourself with single sentence."):
         rprint(chunk)
 
@@ -148,7 +131,7 @@ def demo_batch_response() -> None:
     print("\n" + "=" * 60)
     print("Batch Response — ChatDeepSeek")
     print("=" * 60)
-    llm = _chat_deepseek()
+    llm = chat_deepseek()
     responses = llm.batch(["Introduce yourself with single sentence.", "What is the capital of France?"])
     for response in responses:
         rprint(response.content)
@@ -157,7 +140,7 @@ async def demo_async_invoke() -> None:
     print("\n" + "=" * 60)
     print("Async Invoke — ChatDeepSeek")
     print("=" * 60)
-    llm = _chat_deepseek()
+    llm = chat_deepseek()
     start_time = time.perf_counter()
     async_task = asyncio.create_task(llm.ainvoke("Introduce yourself with single sentence."))
     for i in range(3):
@@ -207,7 +190,7 @@ def run_demo(key: str) -> None:
 
 
 def main() -> None:
-    if not _api_key():
+    if not api_key():
         print("⚠️  未设置 DEEPSEEK_API_KEY，请在 .env 或环境变量中配置")
 
     while True:

@@ -4,30 +4,10 @@
 LangChain 进阶：Prompt 模板
 """
 
-import os
-
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder, SystemMessagePromptTemplate, prompt
-from langchain_deepseek import ChatDeepSeek
 
-MODEL = "deepseek-v4-pro"
-
-
-def _api_base() -> str | None:
-    return os.getenv("DEEPSEEK_BASE_URL")
-
-
-def _api_key() -> str | None:
-    return os.getenv("DEEPSEEK_API_KEY")
-
-
-def _chat_deepseek() -> ChatDeepSeek:
-    kwargs: dict = {"model": MODEL, "api_key": _api_key()}
-    if base := _api_base():
-        kwargs["api_base"] = base
-
-
-    return ChatDeepSeek(**kwargs)
+from deepseek_client import api_key, chat_deepseek
 
 def _test_chat_prompt_format():
     prompt_template = ChatPromptTemplate.from_messages(
@@ -44,7 +24,7 @@ def _test_chat_prompt_format():
     })
     #print(prompt)
     print(type(prompt))
-    response = _chat_deepseek().invoke(prompt)
+    response = chat_deepseek().invoke(prompt)
     print(response.content)
 
     prompt = prompt_template.format(
@@ -53,7 +33,7 @@ def _test_chat_prompt_format():
         input="你好，你是谁？",
     )
     #print(prompt)
-    response = _chat_deepseek().invoke(prompt)
+    response = chat_deepseek().invoke(prompt)
     print(response.content)
 
     prompt = prompt_template.format_messages(
@@ -62,7 +42,7 @@ def _test_chat_prompt_format():
         input="你好，你是谁？",
     )
     #print(prompt)
-    response = _chat_deepseek().invoke(prompt)
+    response = chat_deepseek().invoke(prompt)
     print(response.content)
 
 def _test_chat_prompt_initialization():
@@ -75,7 +55,7 @@ def _test_chat_prompt_initialization():
         "user_input": "你是最牛逼的ai模型吗？",
     })
     #print(prompt)
-    response = _chat_deepseek().invoke(prompt)
+    response = chat_deepseek().invoke(prompt)
     print(response.content)
 
     prompt_template = ChatPromptTemplate.from_messages([
@@ -87,7 +67,7 @@ def _test_chat_prompt_initialization():
         "user_input": "你是最牛逼的ai模型吗？",
     })
     #print(prompt)
-    response = _chat_deepseek().invoke(prompt)
+    response = chat_deepseek().invoke(prompt)
     print(response.content)
 
     prompt_template = ChatPromptTemplate.from_messages([
@@ -96,7 +76,7 @@ def _test_chat_prompt_initialization():
     ])
     #print(prompt)
     prompt = prompt_template.invoke({})
-    response = _chat_deepseek().invoke(prompt)
+    response = chat_deepseek().invoke(prompt)
     print(response.content)
 
 def _test_chat_prompt_partial():
@@ -111,13 +91,13 @@ def _test_chat_prompt_partial():
     prompt = IT_department.invoke({
         "user_input": "我的鼠标为什么坏了？",
     })
-    response = _chat_deepseek().invoke(prompt)
+    response = chat_deepseek().invoke(prompt)
     print(response.content)
     print("-" * 60)
     prompt = SALING_department.invoke({
         "user_input": "我的鼠标为什么坏了？",
     })
-    response = _chat_deepseek().invoke(prompt)
+    response = chat_deepseek().invoke(prompt)
     print(response.content)
     print("-" * 60)
 
@@ -135,7 +115,7 @@ def _test_chat_prompt_placeholder():
             ("user", "我没听清楚，你主攻哪个方向来着？"),
         ]
     })
-    response = _chat_deepseek().invoke(prompt)
+    response = chat_deepseek().invoke(prompt)
     print(response.content)
 
     print("-" * 60)
@@ -153,7 +133,7 @@ def _test_chat_prompt_placeholder():
             HumanMessage(content="我没听清楚，你主攻哪个方向来着？"),
         ]
     })
-    response = _chat_deepseek().invoke(prompt)
+    response = chat_deepseek().invoke(prompt)
     print(response.content)
 
 
@@ -173,12 +153,12 @@ def _test_chat_prompt_placeholder():
             HumanMessage(content="我没听清楚，你主攻哪个方向来着？"),
         ]
     })
-    response = _chat_deepseek().invoke(prompt)
+    response = chat_deepseek().invoke(prompt)
     print(response.content)
 
 
 def main() -> None:
-    if not _api_key():
+    if not api_key():
         print("⚠️  未设置 DEEPSEEK_API_KEY，请在 .env 或环境变量中配置")
     print("=" * 60)
 

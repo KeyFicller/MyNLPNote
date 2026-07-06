@@ -5,37 +5,14 @@ LangChain 进阶：Prompt 模板
 """
 
 from datetime import datetime
-from email import message
-import os
 
-from langchain_core.messages.tool import tool_call
-from langchain_core.messages.utils import _convert_to_openai_tool_calls
 from langchain_core.tools import tool
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder, SystemMessagePromptTemplate, prompt
-from langchain_deepseek import ChatDeepSeek
-from openai.types.responses import response
 from rich import print as rprint
 from langchain_core.utils.function_calling import convert_to_openai_tool
 
-MODEL = "deepseek-v4-pro"
-
-
-def _api_base() -> str | None:
-    return os.getenv("DEEPSEEK_BASE_URL")
-
-
-def _api_key() -> str | None:
-    return os.getenv("DEEPSEEK_API_KEY")
-
-
-def _chat_deepseek() -> ChatDeepSeek:
-    kwargs: dict = {"model": MODEL, "api_key": _api_key()}
-    if base := _api_base():
-        kwargs["api_base"] = base
-
-
-    return ChatDeepSeek(**kwargs)
+from deepseek_client import api_key, chat_deepseek
 
 @tool
 def get_current_time(city: str) -> str:
@@ -62,7 +39,7 @@ def _test_tool_call_with_tool_specification():
     print(result)
 
     print("-" * 60)
-    model_with_tools = _chat_deepseek().bind_tools([get_current_time])
+    model_with_tools = chat_deepseek().bind_tools([get_current_time])
     messages = [
         HumanMessage(content="现在上海是什么时间？")
     ]
@@ -105,7 +82,7 @@ def _test_tool_call_without_tool_specification():
         HumanMessage(content="现在上海是什么天气？")
     ]
     #model_with_tools = _chat_deepseek().bind_tools([converted_tool])
-    model_with_tools = _chat_deepseek().bind_tools([get_weather])
+    model_with_tools = chat_deepseek().bind_tools([get_weather])
     response = model_with_tools.invoke(messages)
     rprint(response)
 
@@ -115,11 +92,11 @@ def _test_tool_call_with_tool_modiifier():
     messages = [
         HumanMessage(content="计算 1 + 2 的和")
     ]
-    response = _chat_deepseek().bind_tools([add]).invoke(messages)
+    response = chat_deepseek().bind_tools([add]).invoke(messages)
     rprint(response)
 
 def main() -> None:
-    if not _api_key():
+    if not api_key():
         print("⚠️  未设置 DEEPSEEK_API_KEY，请在 .env 或环境变量中配置")
     print("=" * 60)
 
