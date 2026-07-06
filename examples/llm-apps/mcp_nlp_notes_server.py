@@ -24,6 +24,7 @@ VALID_PHASES = (
     "phase2-dl",
     "phase3-nlp",
     "phase4-projects",
+    "phase-langchain",
 )
 
 mcp = FastMCP("nlp-notes")

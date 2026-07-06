@@ -2,9 +2,9 @@
 
 **项目**: `@tool` 装饰器与 `bind_tools` 工具调用  
 **技术栈**: LangChain, langchain-core, langchain-deepseek, ChatDeepSeek  
-**示例代码**: `examples/llm-apps/15_langchain_tools.py`  
+**示例代码**: `examples/langchain/05_langchain_tools.py`  
 **前置课程**: 第28课 Function Calling 与 Tools、第35课 LangChain Prompt 模板  
-**环境与运行**：见 [第32课 §1 环境配置](12_LangChain进阶与DeepSeek接入.md#1-环境配置)；本课 `python examples/llm-apps/15_langchain_tools.py`（`main()` 中注释切换三个演示）
+**环境与运行**：见 [第32课 §1 环境配置](01_LangChain进阶与DeepSeek接入.md#1-环境配置)；本课 `python examples/langchain/05_langchain_tools.py`（`main()` 中注释切换三个演示）
 
 ---
 
@@ -348,10 +348,10 @@ Python 函数
 
 ## 10. 参考
 
-- 示例代码：`examples/llm-apps/15_langchain_tools.py`
+- 示例代码：`examples/langchain/05_langchain_tools.py`
 - Function Calling 原理：`notes/phase4-projects/07_Function_Calling与Tools使用.md`
-- 前置笔记：`notes/phase4-projects/15_LangChain_Prompt模板.md`
-- Chat 调用：`notes/phase4-projects/12_LangChain进阶与DeepSeek接入.md`
+- 前置笔记：`notes/phase-langchain/04_LangChain_Prompt模板.md`
+- Chat 调用：`notes/phase-langchain/01_LangChain进阶与DeepSeek接入.md`
 - LangChain Tools：[Tools 文档](https://python.langchain.com/docs/concepts/tools/)
 
 ---

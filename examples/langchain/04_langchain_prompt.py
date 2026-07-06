@@ -1,7 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-LangChain 进阶：Prompt 模板
+第35课：LangChain Prompt 模板
+=============================
+
+运行方式：
+    python examples/langchain/04_langchain_prompt.py
+
+相关笔记：
+    notes/phase-langchain/04_LangChain_Prompt模板.md
+
+在 main() 中注释切换演示函数。
 """
 
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage

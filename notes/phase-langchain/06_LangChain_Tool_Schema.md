@@ -2,9 +2,9 @@
 
 **项目**: `args_schema` 与 Pydantic / JSON Schema 参数定义  
 **技术栈**: LangChain, langchain-core, Pydantic, langchain-deepseek, ChatDeepSeek  
-**示例代码**: `examples/llm-apps/16_langchain_tool_schema.py`  
+**示例代码**: `examples/langchain/06_langchain_tool_schema.py`  
 **前置课程**: 第36课 LangChain Tools 工具、第28课 Function Calling 与 Tools  
-**环境与运行**：见 [第32课 §1 环境配置](12_LangChain进阶与DeepSeek接入.md#1-环境配置)；本课 `python examples/llm-apps/16_langchain_tool_schema.py`
+**环境与运行**：见 [第32课 §1 环境配置](01_LangChain进阶与DeepSeek接入.md#1-环境配置)；本课 `python examples/langchain/06_langchain_tool_schema.py`
 
 ---
 
@@ -321,8 +321,8 @@ Pydantic 嵌套模型即可，例如 `class Address(BaseModel): ...` 再 `locati
 
 ## 10. 参考
 
-- 示例代码：`examples/llm-apps/16_langchain_tool_schema.py`
-- 前置笔记：`notes/phase4-projects/16_LangChain_Tools工具.md`
+- 示例代码：`examples/langchain/06_langchain_tool_schema.py`
+- 前置笔记：`notes/phase-langchain/05_LangChain_Tools工具.md`
 - Function Calling Schema：`notes/phase4-projects/07_Function_Calling与Tools使用.md`（§2 Tools Schema 设计）
 - Pydantic Field：[Pydantic 文档](https://docs.pydantic.dev/latest/concepts/fields/)
 - LangChain Tools：[Tools 文档](https://python.langchain.com/docs/concepts/tools/)

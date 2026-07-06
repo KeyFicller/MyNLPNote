@@ -27,7 +27,8 @@ deactivate
 | `examples/numpy-pandas/` | NumPy、Pandas 数据处理 |
 | `examples/pytorch/` | PyTorch 入门与实战 |
 | `examples/nlp/` | NLP 与预训练模型 |
-| `examples/llm-apps/` | LangChain、RAG、Agent、Function Calling 等 |
+| `examples/llm-apps/` | RAG、Agent、Function Calling、MCP、Skills 等 |
+| `examples/langchain/` | LangChain 进阶（DeepSeek、Tools、Pydantic 等） |
 | `toy/` | 趣味小项目（AI 对战游戏等） |
 | `notes/` | 分阶段学习笔记 |
 
@@ -93,10 +94,19 @@ deactivate
 | 第29课 | 智能客服综合实战 | `08_intelligent_customer_service.py` |
 | 第30课 | MCP 自定义 Server | `09_mcp_server.py` |
 | 第31课 | Agent Skills 编写 | `10_agent_skills.py` |
-| 第32课 | LangChain 进阶（DeepSeek 接入） | `11_langchain_advanced.py` |
-| 第33课 | LangSmith 追踪与可观测性 | `12_langsmith.py` |
-| 第34课 | 消息历史与多轮对话 | `13_messages_history.py` |
-| 第35课 | LangChain Prompt 模板 | `14_langchain_prompt.py` |
+
+#### LangChain 专题（`examples/langchain/`）
+
+| 课程 | 内容 | 文件 |
+|------|------|------|
+| 第32课 | LangChain 进阶（DeepSeek 接入） | `01_langchain_advanced.py` |
+| 第33课 | LangSmith 追踪与可观测性 | `02_langsmith.py` |
+| 第34课 | 消息历史与多轮对话 | `03_messages_history.py` |
+| 第35课 | LangChain Prompt 模板 | `04_langchain_prompt.py` |
+| 第36课 | LangChain Tools 工具 | `05_langchain_tools.py` |
+| 第37课 | LangChain Tool Schema | `06_langchain_tool_schema.py` |
+| 第38课 | LangChain Tool Choices | `07_langchain_tool_choices.py` |
+| 第39课 | LangChain Pydantic 结构化输出 | `08_langchain_pydantic.py` |
 
 ---
 
@@ -124,7 +134,8 @@ python toy/01_whos_undercover.py --players 8 --undercovers 3 --max-rounds 20
 - `notes/phase1-python/` — 编程基础
 - `notes/phase2-dl/` — 深度学习
 - `notes/phase3-nlp/` — NLP 与大模型
-- `notes/phase4-projects/` — 项目实战笔记
+- `notes/phase4-projects/` — 项目实战笔记（RAG、Agent、MCP 等）
+- `notes/phase-langchain/` — LangChain 专题笔记（第32–39课）
 
 ---
 

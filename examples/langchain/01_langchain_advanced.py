@@ -1,7 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-LangChain 进阶：DeepSeek 接入与多种调用方式
+第32课：LangChain 进阶 — DeepSeek 接入与多种调用方式
+======================================================
+
+运行方式：
+    python examples/langchain/01_langchain_advanced.py
+
+相关笔记：
+    notes/phase-langchain/01_LangChain进阶与DeepSeek接入.md
+
 运行后通过菜单选择要执行的示例，不会一次性跑完全部代码。
 """
 

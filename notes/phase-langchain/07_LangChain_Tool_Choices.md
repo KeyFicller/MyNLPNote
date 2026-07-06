@@ -2,9 +2,9 @@
 
 **项目**: `bind_tools` 的 `tool_choice` 参数与调用策略控制  
 **技术栈**: LangChain, langchain-core, langchain-deepseek, ChatDeepSeek  
-**示例代码**: `examples/llm-apps/17_langchain_tool_choices.py`  
+**示例代码**: `examples/langchain/07_langchain_tool_choices.py`  
 **前置课程**: 第36课 LangChain Tools 工具、第37课 Tool Schema  
-**环境与运行**：见 [第32课 §1 环境配置](12_LangChain进阶与DeepSeek接入.md#1-环境配置)；本课 `python examples/llm-apps/17_langchain_tool_choices.py`（连续四次 invoke 对比 `tool_choice`）
+**环境与运行**：见 [第32课 §1 环境配置](01_LangChain进阶与DeepSeek接入.md#1-环境配置)；本课 `python examples/langchain/07_langchain_tool_choices.py`（连续四次 invoke 对比 `tool_choice`）
 
 ---
 
@@ -253,8 +253,8 @@ Agent / LCEL                →  不同节点可 bind 不同 tool_choice
 
 ## 10. 参考
 
-- 示例代码：`examples/llm-apps/17_langchain_tool_choices.py`
-- 前置笔记：`notes/phase4-projects/16_LangChain_Tools工具.md`、`notes/phase4-projects/17_LangChain_Tool_Schema.md`
+- 示例代码：`examples/langchain/07_langchain_tool_choices.py`
+- 前置笔记：`notes/phase-langchain/05_LangChain_Tools工具.md`、`notes/phase-langchain/06_LangChain_Tool_Schema.md`
 - Function Calling 原理：`notes/phase4-projects/07_Function_Calling与Tools使用.md`
 - OpenAI tool_choice：[Chat Completions — Tool choice](https://platform.openai.com/docs/guides/function-calling)
 - LangChain `bind_tools`：`langchain_openai.chat_models.base.BaseChatOpenAI.bind_tools`

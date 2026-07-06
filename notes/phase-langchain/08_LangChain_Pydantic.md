@@ -2,9 +2,9 @@
 
 **项目**: `with_structured_output` 与 Pydantic 模型约束 LLM 返回  
 **技术栈**: LangChain, langchain-core, Pydantic, langchain-deepseek, ChatDeepSeek  
-**示例代码**: `examples/llm-apps/18_langchain_pydantic.py`  
+**示例代码**: `examples/langchain/08_langchain_pydantic.py`  
 **前置课程**: 第37课 Tool Schema、第32课 LangChain 进阶与 DeepSeek 接入  
-**环境与运行**：见 [第32课 §1 环境配置](12_LangChain进阶与DeepSeek接入.md#1-环境配置)；本课 `python examples/llm-apps/18_langchain_pydantic.py`（`main()` 中注释切换六个演示）
+**环境与运行**：见 [第32课 §1 环境配置](01_LangChain进阶与DeepSeek接入.md#1-环境配置)；本课 `python examples/langchain/08_langchain_pydantic.py`（`main()` 中注释切换六个演示）
 
 ---
 
@@ -369,10 +369,10 @@ for attempt in range(3):
 
 ## 13. 参考
 
-- 示例代码：`examples/llm-apps/18_langchain_pydantic.py`
-- 公共客户端：`examples/llm-apps/deepseek_client.py`
-- 前置笔记：`notes/phase4-projects/17_LangChain_Tool_Schema.md`（Pydantic 字段与 Schema）
-- 环境配置：`notes/phase4-projects/12_LangChain进阶与DeepSeek接入.md`
+- 示例代码：`examples/langchain/08_langchain_pydantic.py`
+- 公共客户端：`examples/langchain/deepseek_client.py`
+- 前置笔记：`notes/phase-langchain/06_LangChain_Tool_Schema.md`（Pydantic 字段与 Schema）
+- 环境配置：`notes/phase-langchain/01_LangChain进阶与DeepSeek接入.md`
 - LangChain Structured Output：[Structured output](https://python.langchain.com/docs/how_to/structured_output/)
 - Pydantic 校验：[Validators](https://docs.pydantic.dev/latest/concepts/validators/)
 

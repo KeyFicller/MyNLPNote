@@ -1,7 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-LangChain 进阶：Prompt 模板
+第36课：LangChain Tools 工具
+==============================
+
+运行方式：
+    python examples/langchain/05_langchain_tools.py
+
+相关笔记：
+    notes/phase-langchain/05_LangChain_Tools工具.md
+
+在 main() 中注释切换三个演示。
 """
 
 from datetime import datetime

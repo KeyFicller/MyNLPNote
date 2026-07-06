@@ -1,7 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-LangChain Tool Schema 模板
+第38课：LangChain Tool Choices
+================================
+
+运行方式：
+    python examples/langchain/07_langchain_tool_choices.py
+
+相关笔记：
+    notes/phase-langchain/07_LangChain_Tool_Choices.md
+
+连续四次 invoke 对比 tool_choice。
 """
 
 from langchain_core.tools import tool

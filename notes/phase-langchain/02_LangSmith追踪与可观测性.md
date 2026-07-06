@@ -2,9 +2,9 @@
 
 **项目**: LangChain 应用调试与监控  
 **技术栈**: LangChain, langchain-deepseek, LangSmith  
-**示例代码**: `examples/llm-apps/12_langsmith.py`  
+**示例代码**: `examples/langchain/02_langsmith.py`  
 **前置课程**: 第32课 LangChain 进阶 — DeepSeek 接入与多种调用方式  
-**环境与运行**：DeepSeek 与虚拟环境见 [第32课 §1 环境配置](12_LangChain进阶与DeepSeek接入.md#1-环境配置)；本课 `python examples/llm-apps/12_langsmith.py`
+**环境与运行**：DeepSeek 与虚拟环境见 [第32课 §1 环境配置](01_LangChain进阶与DeepSeek接入.md#1-环境配置)；本课 `python examples/langchain/02_langsmith.py`
 
 ---
 
@@ -302,9 +302,9 @@ LangSmith 适合 LangChain 技术栈的快速调试；混合架构可 OTel + Lan
 
 ## 9. 参考
 
-- 示例代码：`examples/llm-apps/12_langsmith.py`
+- 示例代码：`examples/langchain/02_langsmith.py`
 - LangSmith 文档：[Tracing](https://docs.smith.langchain.com/observability/how_to_guides/tracing)
-- 前置笔记：`notes/phase4-projects/12_LangChain进阶与DeepSeek接入.md`
+- 前置笔记：`notes/phase-langchain/01_LangChain进阶与DeepSeek接入.md`
 - LangChain RunnableConfig：[配置 Runnable](https://python.langchain.com/docs/concepts/runnables/#configurable-fields)
 
 ---

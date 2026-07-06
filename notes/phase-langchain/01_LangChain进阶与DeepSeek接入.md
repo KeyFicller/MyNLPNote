@@ -2,7 +2,7 @@
 
 **项目**: LangChain Chat Model 进阶用法  
 **技术栈**: LangChain, langchain-deepseek, langchain-openai, asyncio  
-**示例代码**: `examples/llm-apps/11_langchain_advanced.py`  
+**示例代码**: `examples/langchain/01_langchain_advanced.py`  
 **前置课程**: 第19课 LangChain 基础与 RAG、第25课 Agent 接入真实 LLM API
 
 ---
@@ -44,7 +44,7 @@ pip install langchain langchain-deepseek langchain-openai langchain-core langsmi
 ### 1.3 运行
 
 ```bash
-python examples/llm-apps/11_langchain_advanced.py
+python examples/langchain/01_langchain_advanced.py
 ```
 
 菜单选项：
@@ -338,7 +338,7 @@ demo_stream_response()
 
 ## 10. 参考
 
-- 示例代码：`examples/llm-apps/11_langchain_advanced.py`
+- 示例代码：`examples/langchain/01_langchain_advanced.py`
 - LangChain Chat Models 文档：[init_chat_model](https://python.langchain.com/docs/how_to/chat_models_universal_init/)
 - 前置笔记：`notes/phase4-projects/01_LangChain基础与RAG.md`
 - API 接入笔记：`notes/phase4-projects/04_AI_Agent接入真实LLM_API.md`

@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-LangChain Tool Schema 模板
+第37课：LangChain Tool Schema
+==============================
+
+运行方式：
+    python examples/langchain/06_langchain_tool_schema.py
+
+相关笔记：
+    notes/phase-langchain/06_LangChain_Tool_Schema.md
 """
 
 from datetime import datetime

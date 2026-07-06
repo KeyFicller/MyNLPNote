@@ -1,7 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-LangChain Pydantic 模板
+第39课：LangChain Pydantic 结构化输出
+======================================
+
+运行方式：
+    python examples/langchain/08_langchain_pydantic.py
+
+相关笔记：
+    notes/phase-langchain/08_LangChain_Pydantic.md
+
+在 main() 中注释切换六个演示。
 """
 
 from typing import Literal, Optional

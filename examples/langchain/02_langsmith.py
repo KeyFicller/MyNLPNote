@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-LangSmith / LangChain 进阶：DeepSeek 直连（ChatDeepSeek）
+第33课：LangSmith 追踪与可观测性
+================================
+
+运行方式：
+    python examples/langchain/02_langsmith.py
+
+相关笔记：
+    notes/phase-langchain/02_LangSmith追踪与可观测性.md
 """
 
 import os

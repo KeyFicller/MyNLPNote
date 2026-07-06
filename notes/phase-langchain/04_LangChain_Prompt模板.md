@@ -2,9 +2,9 @@
 
 **项目**: ChatPromptTemplate 与多轮 Prompt 组装  
 **技术栈**: LangChain, langchain-core, langchain-deepseek, ChatDeepSeek  
-**示例代码**: `examples/llm-apps/14_langchain_prompt.py`  
+**示例代码**: `examples/langchain/04_langchain_prompt.py`  
 **前置课程**: 第34课 消息历史与多轮对话、第19课 LangChain 基础（Prompt Template 概念）  
-**环境与运行**：见 [第32课 §1 环境配置](12_LangChain进阶与DeepSeek接入.md#1-环境配置)；本课 `python examples/llm-apps/14_langchain_prompt.py`（`main()` 中注释切换演示函数）
+**环境与运行**：见 [第32课 §1 环境配置](01_LangChain进阶与DeepSeek接入.md#1-环境配置)；本课 `python examples/langchain/04_langchain_prompt.py`（`main()` 中注释切换演示函数）
 
 ---
 
@@ -337,10 +337,10 @@ template_a + template_b   →  模块化拼接 system 与 history 段
 
 ## 10. 参考
 
-- 示例代码：`examples/llm-apps/14_langchain_prompt.py`
-- 前置笔记：`notes/phase4-projects/14_消息历史与多轮对话.md`
+- 示例代码：`examples/langchain/04_langchain_prompt.py`
+- 前置笔记：`notes/phase-langchain/03_消息历史与多轮对话.md`
 - Prompt 概念：`notes/phase4-projects/01_LangChain基础与RAG.md`（§3 Prompt Template）
-- Chat Model 调用：`notes/phase4-projects/12_LangChain进阶与DeepSeek接入.md`（§4 Invoke 输入格式）
+- Chat Model 调用：`notes/phase-langchain/01_LangChain进阶与DeepSeek接入.md`（§4 Invoke 输入格式）
 - LangChain Prompts：[Prompt Templates 文档](https://python.langchain.com/docs/concepts/prompt_templates/)
 
 ---

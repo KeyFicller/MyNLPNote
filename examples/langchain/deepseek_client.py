@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""LangChain ChatDeepSeek 公共配置与工厂函数。"""
+"""
+LangChain 专题公共模块：ChatDeepSeek 配置与工厂函数。
+
+被 examples/langchain/ 下各课示例 import 使用。
+"""
 
 import os
 

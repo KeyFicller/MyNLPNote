@@ -1,7 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-消息历史记录
+第34课：消息历史与多轮对话
+==========================
+
+运行方式：
+    python examples/langchain/03_messages_history.py
+
+相关笔记：
+    notes/phase-langchain/03_消息历史与多轮对话.md
+
+交互输入 quit 退出。
 """
 
 import os
